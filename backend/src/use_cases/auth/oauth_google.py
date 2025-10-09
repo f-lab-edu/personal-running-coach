@@ -1,19 +1,18 @@
-from fastapi import HTTPException
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID, uuid4
 import httpx
 
 from config.settings import google, security
-from config.logger import get_logger
+from config.exceptions import (DBError, CustomError,InternalError, 
+                               NotFoundError, ValidationError)
 from schemas.models import TokenResponse, LoginResponse
 from adapters.account_adapter import AccountAdapter
 from adapters.token_adapter import TokenAdapter
 from infra.db.storage import repo
-from infra.security import encrypt_token, decrypt_token, TokenInvalidError
+from infra.security import encrypt_token, decrypt_token
 from infra.db.storage.third_party_token_repo import get_all_user_tokens
-
-logger = get_logger(__file__)
 
 # google_auth_oauthlib, google_oauth2 등 라이브러리 사용
 # https://developers.google.com/identity/protocols/oauth2?hl=ko
@@ -51,7 +50,7 @@ class GoogleHandler:
             )
         
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to exchange code for token")
+            raise InternalError(detail="Failed to exchange code for token")
         
         return response.json()
     
@@ -77,7 +76,7 @@ class GoogleHandler:
             id_token_jwt = token_response.get("id_token")
             
             if not id_token_jwt:
-                raise HTTPException(status_code=400, detail="No ID token received")
+                raise ValidationError(message="No ID token received")
             
 
             
@@ -94,7 +93,7 @@ class GoogleHandler:
             name = id_info.get("name")
             
             if not email:
-                raise HTTPException(status_code=400, detail="Invalid google account")
+                raise ValidationError(detail="Invalid google account")
             
             # 3. 로그인. 신규로그인시 유저 생성
             
@@ -107,31 +106,25 @@ class GoogleHandler:
             # 액세스 토큰 생성
             access_token = self.token_adapter.create_access_token(user_id=account_response.id)
             
-            # 4. 기존 리프레시 토큰 있는지 확인
-            existing_token = await repo.get_refresh_token(user_id=account_response.id,
-                                                        db=self.db
-                                                        )
-            # 기존 토큰 존재시 기존 토큰 반환
-            if existing_token:
-                refresh_token = decrypt_token(existing_token,
-                                        key=security.encryption_key_refresh)
-
-            else:
-                # 5. 새 리프레시 토큰 발급
-                refresh_result = self.token_adapter.create_refresh_token(user_id=account_response.id)
-                refresh_token = refresh_result.token
-                
-                # 리프레시 토큰 암호화
-                encrypted = encrypt_token(data=refresh_token,
-                                        key=security.encryption_key_refresh,
-                                        token_type="account_refresh"
-                                        )
+            refresh_result = self.token_adapter.create_refresh_token(user_id=account_response.id)
+            refresh_token = refresh_result.token
             
-                # 리프레시 토큰 저장
-                await repo.add_refresh_token(
-                    user_id=account_response.id, token=encrypted, 
-                    expires_at=refresh_result.expires_at, db=self.db
-                    )        
+            # 리프레시 토큰 암호화
+            encrypted = encrypt_token(data=refresh_token,
+                                    key=security.encryption_key_refresh,
+                                    token_type="account_refresh"
+                                    )
+        
+            device_id = uuid4()
+
+            # 리프레시 토큰 저장
+            await repo.save_refresh_token(
+                user_id=account_response.id, 
+                device_id=device_id,
+                token=encrypted, 
+                expires_at=refresh_result.expires_at, 
+                db=self.db
+                )        
             
             third_parties = await get_all_user_tokens(
                 user_id= account_response.id,
@@ -143,18 +136,14 @@ class GoogleHandler:
             return LoginResponse(
                 token=TokenResponse(
                     access_token=access_token,
-                    refresh_token=refresh_token,
+                    refresh_token=encrypted,
                     ),
+                device_id=device_id,
                 user=account_response,
                 connected=connected_li
             )
 
-        except HTTPException:
+        except CustomError:
             raise
-        except TokenInvalidError as e:
-            logger.exception(str(e))
-            raise HTTPException(status_code=e.status_code, detail=e.detail)
         except Exception as e:
-            logger.exception(str(e))
-            raise HTTPException(status_code=500, detail="internal server error")
-            
+            raise InternalError(context="error google handle_login", original_exception=e)

@@ -1,12 +1,9 @@
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_, delete
 from uuid import UUID
 
+from config.exceptions import DBError
 from infra.db.orm.models import User, UserInfo, Token
-from config.logger import get_logger
-
-logger = get_logger(__name__)
 
 
 ## account
@@ -18,8 +15,7 @@ async def get_user_by_email(email: str,
         )
         return res.scalar_one_or_none()
     except Exception as e:
-        logger.exception(str(e))
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[get_user_by_email] failed {email}", original_exception=e)
 
 async def get_user_by_id(user_id: UUID,
                          db: AsyncSession) -> User | None:
@@ -29,8 +25,7 @@ async def get_user_by_id(user_id: UUID,
         )
         return res.scalar_one_or_none()
     except Exception as e:
-        logger.exception(str(e))
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[get_user_by_id] failed id={user_id}", original_exception=e)
 
         
 async def save_user(user: User,
@@ -41,23 +36,9 @@ async def save_user(user: User,
         await db.refresh(user)
         return user
     except Exception as e:
-        logger.exception(str(e))
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[save_user] failed id={user.id}", original_exception=e)
 
-
-# async def update_user(user: User,
-#                       db: AsyncSession) -> User:
-    
-#     try:
-#         db.add(user)
-#         await db.commit()
-#         await db.refresh(user)
-#         return user
-#     except Exception as e:
-#         logger.exception(str(e))
-#         await db.rollback()
-#         raise HTTPException(status_code=400, detail=str(e))
 
 
 async def delete_user(user: User,
@@ -66,9 +47,8 @@ async def delete_user(user: User,
         await db.delete(user)
         await db.commit()
     except Exception as e:
-        logger.exception(str(e))
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[delete_user] failed id={user.id}", original_exception=e)
 
 async def save_user_info(user_info:UserInfo,
                         db:AsyncSession)->UserInfo:
@@ -78,9 +58,8 @@ async def save_user_info(user_info:UserInfo,
         await db.refresh(user_info)
         return user_info
     except Exception as e:
-        logger.exception(str(e))
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[save_user_info] failed id={user_info.user_id}", original_exception=e)
 
     
 async def get_user_info(user_id:UUID,
@@ -95,15 +74,15 @@ async def get_user_info(user_id:UUID,
         return info 
 
     except Exception as e:
-        logger.exception(str(e))
         await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[get_user_info] failed id={user_id}", original_exception=e)
 
-async def get_refresh_token(user_id:UUID,
+async def get_refresh_token(user_id:UUID, device_id:UUID,
                             db:AsyncSession)-> str | None:
     try:
         res = await db.execute(
-                        select(Token).where(Token.user_id==user_id))
+                        select(Token).where(and_(Token.user_id==user_id, 
+                                                 Token.device_id == device_id)))
         token = res.scalar_one_or_none()
         
         if token is None:
@@ -111,25 +90,48 @@ async def get_refresh_token(user_id:UUID,
         return token.refresh_token
     
     except Exception as e:
-        logger.exception(str(e))
-        raise HTTPException(status_code=400, detail=str(e))
+        raise DBError(context=f"[get_refresh_token] failed id={user_id}", original_exception=e)
 
-
-async def add_refresh_token(user_id:UUID, 
+# add/refresh refresh_token
+async def save_refresh_token(user_id:UUID, 
+                             device_id:UUID,
                             token:str,
                             expires_at: int,
                              db: AsyncSession) -> None:
-    token = Token(user_id=user_id, 
-                  refresh_token=token,
-                  expires_at=expires_at
-                  )
-
-    try:
-        db.add(token)
-        await db.commit()
-        await db.refresh(token)
-    except Exception as e:
-        logger.exception(str(e))
-        await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
     
+    try:
+        res = await db.execute(select(Token).where(and_(Token.user_id == user_id,
+                                                        Token.device_id == device_id
+                                                        )))
+        refresh_token = res.scalar_one_or_none()
+        if refresh_token:
+            refresh_token.refresh_token = token
+            refresh_token.expires_at = expires_at
+        else:
+            refresh_token = Token(user_id=user_id, 
+                                  device_id=device_id,
+                        refresh_token=token,
+                        expires_at=expires_at
+                        )
+            db.add(refresh_token)
+        await db.commit()
+        await db.refresh(refresh_token)
+    except Exception as e:
+        await db.rollback()
+        raise DBError(context=f"[save_refresh_token] failed id={user_id}", original_exception=e)
+
+
+async def remove_refresh_token(user_id:UUID, device_id:UUID,
+                            db:AsyncSession):
+    try:
+        res = await db.execute(
+            delete(Token).where(and_(Token.user_id==user_id, 
+                                    Token.device_id == device_id)))
+        
+        await db.commit()
+        if res.rowcount == 0:
+            return False
+        return True
+
+    except Exception as e:
+        raise DBError(context=f"[remove_refresh_token] failed id={user_id}", original_exception=e)
