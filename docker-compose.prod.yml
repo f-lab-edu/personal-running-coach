@@ -24,13 +24,11 @@ services:
     #   - "6379:6379"
 
 
-  backend:
+  app1:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    container_name: backend
-    # ports:
-    #   - "8000:8000"
+    container_name: backend_app1
     environment:
       - PYTHONPATH=/app/src
       - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/mydb
@@ -41,6 +39,34 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+
+  app2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: backend_app2
+    environment:
+      - PYTHONPATH=/app/src
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/mydb
+    volumes:
+      - ../logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+
+
+        
 
   nginx:
     image: nginx:latest
