@@ -57,4 +57,7 @@ jobs:
           script: |
             cd ~/personal-running-coach
             git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build
+            sed -i 's/\r$//' *.sh
+            sudo chmod +x *.sh
+            bash deploy.sh
+      # docker compose -f docker-compose.prod.yml up -d --build
