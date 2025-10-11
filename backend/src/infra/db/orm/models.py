@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 from typing import Optional, List
 from datetime import datetime, timezone
-from sqlalchemy import Column, JSON, UniqueConstraint, DateTime
+from sqlalchemy import Column, JSON, DateTime, BigInteger
 from sqlmodel import SQLModel, Field, Relationship
 
 # --- User ---
@@ -57,7 +57,9 @@ class TrainSession(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     user_id: UUID = Field(foreign_key="user.id")
     provider: Optional[str] = None
-    activity_id: Optional[int] = None
+    activity_id: Optional[int] = Field(
+        sa_column=Column(BigInteger, nullable=True)
+    )
     created_at: datetime = Field(default_factory= lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     train_date: datetime
     distance:Optional[float] = None
