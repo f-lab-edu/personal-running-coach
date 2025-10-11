@@ -18,6 +18,7 @@ async def add_train_session(db: AsyncSession,
 
         session = TrainSession(
             user_id=user_id,
+            activity_id=activity.activity_id,
             provider=activity.provider,
             train_date=activity.start_date,
             distance=activity.distance,
@@ -33,6 +34,7 @@ async def add_train_session(db: AsyncSession,
         return session
     except IntegrityError as e:
         await db.rollback()
+        # raise DBError(context=f"[add_train_session] failed id={user_id}", original_exception=e)
         return None
     except Exception as e:
         await db.rollback()
