@@ -24,10 +24,10 @@ echo "=== 서버 무중단 배포 시작 ==="
 echo ""
 echo "2. app1 배포 시작..."
 echo "   - app1 Graceful Shutdown 시작 (SIGTERM 전송)"
-docker-compose stop -t 30 app1
+docker compose stop -t 30 app1
 
 echo "   - app1 재시작"
-docker-compose up -d app1
+docker compose up -d app1
 
 echo "   - app1 헬스체크 대기 (최대 30초)"
 timeout=30
@@ -54,10 +54,10 @@ sleep 20
 echo ""
 echo "4. app2 배포 시작..."
 echo "   - app2 Graceful Shutdown 시작 (SIGTERM 전송)"
-docker-compose stop -t 30 app2
+docker compose stop -t 30 app2
 
 echo "   - app2 재시작"
-docker-compose up -d app2
+docker compose up -d app2
 
 echo "   - app2 헬스체크 대기 (최대 30초)"
 timeout=30
