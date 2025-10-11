@@ -11,11 +11,11 @@ import os
 env_path = Path(__file__).resolve().parent / "src" / ".env"
 load_dotenv(env_path)
 
-# url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db:5432/mydb")
-# if url.startswith("postgresql+asyncpg"):
-#     url = url.replace("postgresql+asyncpg", "postgresql+psycopg2") # alembic 에서는 sync로 마이그레이션
+url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db:5432/mydb")
+if url.startswith("postgresql+asyncpg"):
+    url = url.replace("postgresql+asyncpg", "postgresql+psycopg2") # alembic 에서는 sync로 마이그레이션
 
-url = "postgresql+psycopg2://user:password@localhost:5432/mydb"
+# url = "postgresql+psycopg2://user:password@localhost:5432/mydb"
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,6 +31,10 @@ if config.config_file_name is not None:
 # sqlmodel 
 from sqlmodel import SQLModel
 target_metadata = SQLModel.metadata
+from src.infra.db.orm.models import (
+    User, UserInfo, Token, ThirdPartyToken, TrainSession, 
+    TrainSessionLap, TrainSessionStream, LLM, 
+)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
