@@ -33,10 +33,13 @@ class TrainingAdapter(TrainingPort):
             # 이미 db에 저장된 세션.
             if session is None:
                 return False
-            await asyncio.gather(
-                repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream),
-                repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
-            )
+            # 병렬 실행시 같은 db 세션을 사용해서 commit 충돌 일어남.
+            # await asyncio.gather(
+            #     repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream),
+            #     repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
+            # )
+            repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream)
+            repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
             
             return True
             
