@@ -9,7 +9,9 @@ docker compose build
 # docker compose up -d db
 # docker compose up -d redis
 
-
+# 2.5 Alembic DB 마이그레이션
+echo "=== Alembic DB Migration 시작 ==="
+docker compose exec app1 alembic upgrade head
 
 # echo "3. nginx 설정 재로드..."
 docker compose exec nginx nginx -s reload
