@@ -22,31 +22,27 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     conn = op.get_bind()
-    trans = conn.begin()
-    try:
-        # nullable true 로 초기 설정
-        op.add_column('token', sa.Column('device_id', sa.Uuid(), nullable=True))
+    
+    # nullable true 로 초기 설정
+    op.add_column('token', sa.Column('device_id', sa.Uuid(), nullable=True))
 
-        # 기존 데이터들의 디폴트 값 채우기
-        tokens = conn.execute(sa.text("SELECT id FROM token")).fetchall()
-        for token_id, in tokens:
-            conn.execute(
-                sa.text("UPDATE token SET device_id = :uuid WHERE id = :id"),
-                {"uuid": str(uuid.uuid4()), "id": token_id}
-            )
+    # 기존 데이터들의 디폴트 값 채우기
+    tokens = conn.execute(sa.text("SELECT id FROM token")).fetchall()
+    for token_id, in tokens:
+        conn.execute(
+            sa.text("UPDATE token SET device_id = :uuid WHERE id = :id"),
+            {"uuid": str(uuid.uuid4()), "id": token_id}
+        )
 
-        # nullable false 로 업데이트
-        op.alter_column('token', 'device_id', nullable=False)
-        op.alter_column('trainsession', 'activity_id',
-                existing_type=sa.INTEGER(),
-                nullable=True)
-        op.drop_index(op.f('ix_trainsession_activity_id'), table_name='trainsession')
-        op.drop_constraint(op.f('uq_provider_activity'), 'trainsession', type_='unique')
-        # ### end Alembic commands ###
-        trans.commit()
-    except Exception as e:
-        trans.rollback()
-        raise e
+    # nullable false 로 업데이트
+    op.alter_column('token', 'device_id', nullable=False)
+    op.alter_column('trainsession', 'activity_id',
+            existing_type=sa.INTEGER(),
+            nullable=True)
+    op.drop_index(op.f('ix_trainsession_activity_id'), table_name='trainsession')
+    op.drop_constraint(op.f('uq_provider_activity'), 'trainsession', type_='unique')
+    # ### end Alembic commands ###
+    
 
 
 def downgrade() -> None:
