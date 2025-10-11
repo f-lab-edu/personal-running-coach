@@ -22,7 +22,6 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     conn = op.get_bind()
-    trans = conn.begin()
     try:
         # nullable true 로 초기 설정
         op.add_column('token', sa.Column('device_id', sa.Uuid(), nullable=True))
@@ -43,9 +42,7 @@ def upgrade() -> None:
         op.drop_index(op.f('ix_trainsession_activity_id'), table_name='trainsession')
         op.drop_constraint(op.f('uq_provider_activity'), 'trainsession', type_='unique')
         # ### end Alembic commands ###
-        trans.commit()
     except Exception as e:
-        trans.rollback()
         raise e
 
 
