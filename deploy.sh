@@ -32,7 +32,7 @@ docker compose up -d app1
 echo "   - app1 헬스체크 대기 (최대 30초)"
 timeout=30
 elapsed=0
-until curl -f http://localhost:8001/health >/dev/null 2>&1 || [ $elapsed -ge $timeout ]; do
+until curl -f http://localhost:8000/health >/dev/null 2>&1 || [ $elapsed -ge $timeout ]; do
     sleep 1
     elapsed=$((elapsed + 1))
     echo "     대기 중... ${elapsed}초"
@@ -62,7 +62,7 @@ docker compose up -d app2
 echo "   - app2 헬스체크 대기 (최대 30초)"
 timeout=30
 elapsed=0
-until curl -f http://localhost:8002/health >/dev/null 2>&1 || [ $elapsed -ge $timeout ]; do
+until curl -f http://localhost:8001/health >/dev/null 2>&1 || [ $elapsed -ge $timeout ]; do
     sleep 1
     elapsed=$((elapsed + 1))
     echo "     대기 중... ${elapsed}초"
