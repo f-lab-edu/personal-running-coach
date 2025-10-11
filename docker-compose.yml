@@ -4,13 +4,13 @@ services:
     image: postgres:15
     container_name: postgres
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # ports:
-    #   - "5432:5432"
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
       interval: 5s
@@ -20,20 +20,24 @@ services:
   redis:
     image: redis:7
     container_name: redis
-    # ports:
-    #   - "6379:6379"
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
 
 
-  backend:
+  app1:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    container_name: backend
-    # ports:
-    #   - "8000:8000"
+    container_name: server_app1
+    expose:
+      - "8000"
+    env_file:
+      - ./backend/src/.env
     environment:
       - PYTHONPATH=/app/src
-      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/mydb
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-mydb}
     volumes:
       - ../logs/backend:/app/logs
     depends_on:
@@ -41,6 +45,45 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+
+  app2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: server_app2
+    expose:
+      - "8000"
+    env_file:
+      - ./backend/src/.env
+    environment:
+      - PYTHONPATH=/app/src
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-mydb}
+    volumes:
+      - ../logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+
+
+        
 
   nginx:
     image: nginx:latest
@@ -74,3 +117,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

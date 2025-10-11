@@ -3,10 +3,12 @@ services:
   db:
     image: postgres:15
     container_name: postgres
+    env_file:
+      - ./backend/src/.env
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -17,44 +19,81 @@ services:
       timeout: 3s
       retries: 5
 
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    container_name: backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-    environment:
-      - PYTHONPATH=/app/src
-      - RUN_ENV=docker
-      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/mydb
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-
   redis:
     image: redis:7
     container_name: redis
     expose:
       - "6379"
+
+  app1:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: server_app1
+    ports:
+      - "8000"
+    env_file:
+      - ./backend/src/.env
+    environment:
+      - PYTHONPATH=/app/src
+      - RUN_ENV=docker
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-mydb}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  app2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: server_app2
+    ports:
+      - "8000"
+    environment:
+      - PYTHONPATH=/app/src
+      - RUN_ENV=docker
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-mydb}
+    env_file:
+      - ./backend/src/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html   # vite build 결과물
+      - ./data/nginx/dev:/etc/nginx/conf.d
+      - ../logs/nginx:/var/log/nginx  # 로그
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    ports:
+      - "8080:80"
+    depends_on:
+      - app1
+      - app2
+    command: nginx -g "daemon off;"
 
 volumes:
   postgres_data:
