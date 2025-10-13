@@ -29,8 +29,6 @@ const UserPage: React.FC = () => {
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
-		console.log(`${name}, ${value}`);
-		console.log(profile);
 		if (infoKeys.includes(name as keyof UserInfoData)) {
 			// 'height' 같은 키는 이 블록으로
 			setForm(f => ({

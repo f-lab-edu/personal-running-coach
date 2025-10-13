@@ -14,7 +14,7 @@ export default function StravaCallback(
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       if (!code) {
-        alert("Google login failed: code missing");
+        alert("login failed: code missing");
         return;
       }
 

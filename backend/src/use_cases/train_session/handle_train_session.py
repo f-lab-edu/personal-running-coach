@@ -108,8 +108,6 @@ class TrainSessionHandler:
         """
         try:
             redis_etag = await self.redis_adapter.get_user_etag(user_id=payload.user_id,page=ETAG_TRAIN_SESSION)
-            print(redis_etag, type(redis_etag))
-            print(etag, type(redis_etag))
             # 사용자 etag 가 서버와 매칭할 경우 304 
             if redis_etag is not None and etag is not None and redis_etag == etag :
                 raise NotModifiedError(context="data not modified")
