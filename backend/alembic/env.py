@@ -8,14 +8,13 @@ from alembic import context
 from dotenv import load_dotenv
 from pathlib import Path
 import os
-env_path = Path(__file__).resolve().parent / "src" / ".env"
+env_path = Path(__file__).resolve().parent.parent / "src" / ".env"
 load_dotenv(env_path)
 
 url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@db:5432/mydb")
 if url.startswith("postgresql+asyncpg"):
     url = url.replace("postgresql+asyncpg", "postgresql+psycopg2") # alembic 에서는 sync로 마이그레이션
 
-# url = "postgresql+psycopg2://user:password@localhost:5432/mydb"
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

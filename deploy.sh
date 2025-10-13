@@ -9,13 +9,16 @@ docker compose build
 # docker compose up -d db
 # docker compose up -d redis
 
+
 # 2.5 Alembic DB 마이그레이션
+# 현재 서비스중인 app1 대신 임시 컨테이너 실행해서 처리
 echo "=== Alembic DB Migration 시작 ==="
-docker compose exec app1 alembic upgrade head
+docker compose run --rm --no-deps app1 alembic upgrade head
+
+
 
 # echo "3. nginx 설정 재로드..."
 docker compose exec nginx nginx -s reload
-
 
 # 무중단 배포 스크립트
 # 한 서버씩 순차적으로 재배포
