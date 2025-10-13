@@ -68,14 +68,7 @@ async function fetchWithAuth(
     }
   }
 
-  // 304 상태도 예외로 던지지 않고 반환
-  if (!res.ok && res.status !== 304) throw new Error(`API request failed: ${res.status}`);
-
-  if (options.returnRawResponse) {
-    return { status: res.status, data: resData };
-  }
-
-  return resData;
+  return { status: res.status, data: resData };
 }
 
 
@@ -85,7 +78,7 @@ export async function fetchAnalysis() {
 
 // Generate new AI sessions and advice (POST /ai/generate)
 export async function generateAnalysis() {
-  return fetchWithAuth(`${API_BASE_URL}/ai/generate`, {
+  return await fetchWithAuth(`${API_BASE_URL}/ai/generate`, {
     method: "POST",
   });
 
@@ -129,33 +122,32 @@ export async function fetchTrainDetail(session_id: string) {
 
 
 // Fetch train schedules (GET /trainsession/fetch-schedules)
-export async function fetchSchedules(token: string, date?: number, etag?: string) {
+export async function fetchSchedules(date?: number, etag?: string) {
   const url = new URL(`${API_BASE_URL}/trainsession/fetch-schedules`);
   if (date) url.searchParams.append('date', date.toString());
 
   const headers: Record<string, string> = {};
   if (etag) headers["If-None-Match"] = etag;
 
-  const res = await fetchWithAuth(url.toString(), { headers, returnRawResponse: true });
+  const {status, data} = await fetchWithAuth(url.toString(), { headers, returnRawResponse: true });
 
   // 
-  if (res.status === 304) {
+  if (status === 304) {
     return { notModified: true };
   }
   // 서버에서 새로운 etag + data 내려줌
-  return { notModified: false, ...res };
+  return { notModified: false, ...data };
 }
 
 // Fetch new schedules (GET /trainsession/fetch-new-schedules)
-export async function fetchNewSchedules(token: string, date?: number) {
+export async function fetchNewSchedules(date?: number) {
   const url = new URL(`${API_BASE_URL}/trainsession/fetch-new-schedules`);
   if (date) url.searchParams.append('date', date.toString());
-    const res = await fetch(url.toString(), {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (res.status == 404) throw new Error("no connected party");
-  else if (!res.ok) throw new Error('Failed to fetch new schedules');
-  return await res.json();
+    
+    const {status, data} = await fetchWithAuth(url.toString())
+
+  if (status == 404) throw new Error("no connected party to fetch from");
+  return data;
 }
 
 // Upload new train session (POST /trainsession/upload)

@@ -24,19 +24,16 @@ const TrainingPage: React.FC = () => {
 		return new Date(now.getFullYear(), now.getMonth(), 1);
 	});
 
-	const accessToken = localStorage.getItem('access_token');
-
 	// Helper keys for sessionStorage
 	const ETAG_KEY = 'train_schedules_etag';
 	const DATA_KEY = 'train_schedules_data';
 
 	useEffect(() => {
-		if (!accessToken) return;
 		setLoading(true);
 		setError('');
 		// Get etag from sessionStorage
 		const etag = sessionStorage.getItem(ETAG_KEY) || undefined;
-		fetchSchedules(accessToken, undefined, etag)
+		fetchSchedules(undefined, etag)
 			.then(result => {
 				if (result.notModified) {
 					// Use cached data
@@ -62,15 +59,14 @@ const TrainingPage: React.FC = () => {
 	}, []);
 
 	const handleRefresh = async () => {
-		if (!accessToken) return;
 		setLoading(true);
 		setError('');
 		try {
-			const res = await fetchNewSchedules(accessToken);
+			const res = await fetchNewSchedules();
 			if (res) {
 				// After new schedules are generated, fetch with etag again
 				const etag = sessionStorage.getItem(ETAG_KEY) || undefined;
-				const result = await fetchSchedules(accessToken, undefined, etag);
+				const result = await fetchSchedules(undefined, etag);
 				if (result.notModified) {
 					const cached = sessionStorage.getItem(DATA_KEY);
 					if (cached) {

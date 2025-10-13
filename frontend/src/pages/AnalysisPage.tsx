@@ -12,8 +12,14 @@ const AnalysisPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchAnalysis();
-      setData(res && (res.sessions || res.advice) ? res : null);
+      const {status, data} = await fetchAnalysis();
+
+      if (status === 200) setData(data && (data.sessions || data.advice) ? data : null);
+      else if (status === 500) setError(`server error.`);
+      else {
+        setError(`Unexpected Error : ${status}`);
+      }
+
     } catch (e: any) {
       setError(e.message || 'Failed to load analysis');
       // Do NOT clear previous data
@@ -30,12 +36,13 @@ const AnalysisPage: React.FC = () => {
     setGenerating(true);
     setError(null);
     try {
-      const res = await generateAnalysis();
-      if (!res || (!res.sessions && !res.advice)) {
+      const {status, data} = await generateAnalysis();
+      if (status === 400) setError(data.detail);
+      else if (!data || (!data.sessions && !data.advice)) {
         setError('You are not authorized to generate analysis yet.');
         // Do NOT clear previous data
       } else {
-        setData(res);
+        setData(data);
       }
     } catch (e: any) {
       setError(e.message || 'Failed to generate analysis');
