@@ -30,7 +30,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: server_app1
-    ports:
+    volumes:
+      - ./backend:/app
+    expose:
       - "8000"
     env_file:
       - ./backend/src/.env
@@ -55,7 +57,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: server_app2
-    ports:
+    volumes:
+      - ./backend:/app
+    expose:
       - "8000"
     environment:
       - PYTHONPATH=/app/src

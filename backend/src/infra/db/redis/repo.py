@@ -10,7 +10,7 @@ async def set_value(redisdb: Redis, k:str, v:str, ttl:int = None):
     except Exception as e:
         raise DBError(context=f"error set_value {k} {v}", original_exception=e)
 
-async def get_value(redisdb: Redis, k:str) -> str | None:
+async def get_value(redisdb: Redis, k:str) -> int | None:
     """유저별 + 페이지별 etag 조회"""
     try:
         return await redisdb.get(k)
@@ -24,3 +24,12 @@ async def delete_key(redisdb: Redis, k: str) -> int:
         return deleted_count
     except Exception as e:
         raise DBError(context=f"error delete_key {k}", original_exception=e)
+    
+async def incr_value(redisdb:Redis, k:str)->int:
+    try:
+        return await redisdb.incr(k)
+
+    except Exception as e:
+        raise DBError(context=f"error delete_key {k}", original_exception=e)
+    
+

@@ -19,7 +19,7 @@ class RedisAdapter(RedisPort):
             await repo.set_value(redisdb=self.db,
                                  k=self._etag_key(user_id=user_id, page=page),
                                  v=etag,
-                                 ttl=ETAG_TTL_SEC
+                                #  ttl=ETAG_TTL_SEC
                                  )
         except CustomError:
             raise
@@ -29,7 +29,11 @@ class RedisAdapter(RedisPort):
     
     async def get_user_etag(self,user_id: UUID, page: str) -> str | None:
         try:
-            return await repo.get_value(redisdb=self.db,k=self._etag_key(user_id=user_id, page=page))
+            res = await repo.get_value(redisdb=self.db,k=self._etag_key(user_id=user_id, page=page))
+            if res is None:
+                return None
+            return str(res)
+        
         except CustomError:
             raise
         except Exception as e:
@@ -43,6 +47,22 @@ class RedisAdapter(RedisPort):
                 redisdb=self.db,
                 k=self._etag_key(user_id=user_id, page=page)
             )
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(
+                context=f"adapter remove_user_etag {user_id} {page}",
+                original_exception=e
+        )
+    
+    async def incr_etag_version(self, user_id:UUID, page:str)->str:
+        """etag 버전 값 증가 """
+        try:
+            new_version = await repo.incr_value(
+                redisdb=self.db,
+                k=self._etag_key(user_id=user_id, page=page)
+            )
+            return str(new_version)
         except CustomError:
             raise
         except Exception as e:
