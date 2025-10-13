@@ -7,7 +7,7 @@ from ports.training_port import TrainingPort
 from ports.account_port import AccountPort
 from ports.llm_data_port import LLMDataPort
 from schemas.models import TokenPayload, LLMResponse
-from config.exceptions import CustomError, InternalError
+from config.exceptions import CustomError, InternalError, BadRequestError
 
 
 
@@ -71,6 +71,9 @@ class LLMHandler:
 
             if not is_available:
                 return None
+                        
+            if user_info is None or any(val is None for val in user_info.model_dump().values()):
+                raise BadRequestError(detail="please update user info")
             
             advice, plans = await asyncio.gather(
                 self.llm_adapter.generate_coach_advice(user_info=user_info,training_sessions=sessions),

@@ -32,6 +32,10 @@ class TokenInvalidError(CustomError):
 class NotModifiedError(CustomError):
     status_code = 304
     detail = "resource has not been modified"
+
+class BadRequestError(CustomError):
+    status_code = 400
+    detail = "bad input"
     
 
 class DBError(CustomError):
