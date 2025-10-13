@@ -32,8 +32,9 @@ services:
     container_name: server_app1
     volumes:
       - ./backend:/app
-    expose:
-      - "8000"
+      - ../logs/backend:/app/logs
+    ports:
+      - "8000:8000"
     env_file:
       - ./backend/src/.env
     environment:
@@ -59,8 +60,9 @@ services:
     container_name: server_app2
     volumes:
       - ./backend:/app
-    expose:
-      - "8000"
+      - ../logs/backend:/app/logs
+    ports:
+      - "8001:8000"
     environment:
       - PYTHONPATH=/app/src
       - RUN_ENV=docker
