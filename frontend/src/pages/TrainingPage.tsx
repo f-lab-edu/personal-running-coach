@@ -59,41 +59,41 @@ const TrainingPage: React.FC = () => {
 			})
 			.catch(e => setError(e.message))
 			.finally(() => setLoading(false));
-	}, [accessToken]);
+	}, []);
 
-		const handleRefresh = async () => {
-			if (!accessToken) return;
-			setLoading(true);
-			setError('');
-			try {
-				const res = await fetchNewSchedules(accessToken);
-				if (res) {
-					// After new schedules are generated, fetch with etag again
-					const etag = sessionStorage.getItem(ETAG_KEY) || undefined;
-					const result = await fetchSchedules(accessToken, undefined, etag);
-					if (result.notModified) {
-						const cached = sessionStorage.getItem(DATA_KEY);
-						if (cached) {
-							try {
-								setSchedules(JSON.parse(cached));
-							} catch {
-								setSchedules([]);
-							}
-						} else {
+	const handleRefresh = async () => {
+		if (!accessToken) return;
+		setLoading(true);
+		setError('');
+		try {
+			const res = await fetchNewSchedules(accessToken);
+			if (res) {
+				// After new schedules are generated, fetch with etag again
+				const etag = sessionStorage.getItem(ETAG_KEY) || undefined;
+				const result = await fetchSchedules(accessToken, undefined, etag);
+				if (result.notModified) {
+					const cached = sessionStorage.getItem(DATA_KEY);
+					if (cached) {
+						try {
+							setSchedules(JSON.parse(cached));
+						} catch {
 							setSchedules([]);
 						}
 					} else {
-						if (result.etag) sessionStorage.setItem(ETAG_KEY, result.etag);
-						if (result.data) sessionStorage.setItem(DATA_KEY, JSON.stringify(result.data));
-						setSchedules(result.data || []);
+						setSchedules([]);
 					}
+				} else {
+					if (result.etag) sessionStorage.setItem(ETAG_KEY, result.etag);
+					if (result.data) sessionStorage.setItem(DATA_KEY, JSON.stringify(result.data));
+					setSchedules(result.data || []);
 				}
-			} catch (e: any) {
-				setError(e.message);
-			} finally {
-				setLoading(false);
 			}
-		};
+		} catch (e: any) {
+			setError(e.message);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	// Calendar logic
 	const year = currentMonth.getFullYear();
