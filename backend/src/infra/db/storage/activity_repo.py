@@ -19,7 +19,7 @@ async def add_train_session(db: AsyncSession,
         session_data = {
             "user_id": user_id,
             "provider": activity.provider,
-            "train_date": activity.start_date.replace(tzinfo=None),
+            "train_date": activity.start_date,
             "distance": activity.distance,
             "avg_speed": activity.average_speed,
             "total_time": activity.elapsed_time,

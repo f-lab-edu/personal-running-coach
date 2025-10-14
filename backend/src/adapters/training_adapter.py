@@ -107,9 +107,9 @@ class TrainingAdapter(TrainingPort):
         """기간 내의 훈련 세션 받기"""
         try:
             if start_date is not None:
-                start_date = datetime.fromtimestamp(start_date, tz=timezone.utc).replace(tzinfo=None)
+                start_date = datetime.fromtimestamp(start_date, tz=timezone.utc)
             else:
-                cur = datetime.now(timezone.utc).replace(tzinfo=None)
+                cur = datetime.now(timezone.utc)
                 start_date = cur - timedelta(days=14)
                 
             sessions = await repo.get_train_session_by_date(db=self.db,

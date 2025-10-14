@@ -68,7 +68,7 @@ class LLMDataAdapter(LLMDataPort):
             
             # 정해진 기일 내 한번 리밋
             next_available = saved.executed_at + timedelta(days=limiter_day)
-            return datetime.now(timezone.utc).replace(tzinfo=None) >= next_available
+            return datetime.now(timezone.utc) >= next_available
         except CustomError:
             raise
         except Exception as e:

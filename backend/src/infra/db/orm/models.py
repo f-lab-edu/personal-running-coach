@@ -10,7 +10,11 @@ class User(SQLModel, table=True):
     email: str
     hashed_pwd: Optional[str] = Field(default=None) 
     name: Optional[str] = Field(default=None)  # Make name optional for OAuth users
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),  # tz-aware
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+
     provider: str = Field(default="local")  # Default to "local" for email/password users
 
     user_info:List["UserInfo"] = Relationship(back_populates="user", cascade_delete=True)
@@ -47,7 +51,7 @@ class ThirdPartyToken(SQLModel, table=True):
     provider_user_id:str # 외부 서비스 아이디
     access_token: str
     refresh_token: str
-    expires_at: int  # UNIX timestamp 혹은 datetime으로 변경 가능
+    expires_at: int 
     extra_data: Optional[str] = None  
 
     user: Optional["User"] = Relationship(back_populates="third_party_tokens")
@@ -62,8 +66,13 @@ class TrainSession(SQLModel, table=True):
                          Sequence("local_activity_id_seq", start=1, increment=1),
                          nullable=True)
     )
-    created_at: datetime = Field(default_factory= lambda: datetime.now(timezone.utc).replace(tzinfo=None))
-    train_date: datetime
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),  # tz-aware 유지
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    train_date: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
     distance:Optional[float] = None
     avg_speed: Optional[float] = None
     total_time: Optional[float] = None
@@ -107,14 +116,13 @@ class TrainSessionLap(SQLModel, table=True):
 class LLM(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     user_id: UUID = Field(foreign_key="user.id")
-    executed_at: datetime = Field(default_factory=lambda : datetime.now(timezone.utc).replace(tzinfo=None),
+    executed_at: datetime = Field(default_factory=lambda : datetime.now(timezone.utc),
                                   sa_column=Column(
                                         DateTime(timezone=True),  # ✅ tz-aware datetime
-                                        onupdate=datetime.now(timezone.utc).replace(tzinfo=None)
+                                        onupdate=datetime.now(timezone.utc)
                                     )
                                 )
-                                #   sa_column_kwargs={"onupdate": datetime.now(timezone.utc)}
-                                #   )
+                                
     workout: Optional[List[dict]] = Field(default=None, sa_column=Column(JSON))
     coach_advice: Optional[str] = None
 
