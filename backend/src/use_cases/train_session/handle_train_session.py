@@ -165,6 +165,26 @@ class TrainSessionHandler:
 
     
 
+    async def delete_schedule(self, payload: TokenPayload, 
+                        session_id:UUID
+                        ):
+        """ 훈련 삭제"""
+        try:
+            res = await self.db_adapter.delete_session(user_id=payload.user_id,
+                                                       session_id=session_id
+                                                       )
+        
+            # redis etag 버전 갱신
+            await self.redis_adapter.incr_etag_version(user_id=payload.user_id,
+                                                page=ETAG_TRAIN_SESSION)
+            
+            return res
+            
+
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(context="error delete schedule", original_exception=e)
 
 
     def update_schedule(self, payload: TokenPayload, 

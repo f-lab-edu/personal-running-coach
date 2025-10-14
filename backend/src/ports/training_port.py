@@ -45,7 +45,7 @@ class TrainingPort(ABC):
         ...
         
     @abstractmethod
-    def delete_session(self, user_id:UUID, session_id:int)->bool:
+    async def delete_session(self, user_id:UUID, session_id:UUID)->bool:
         """세션 삭제"""
         ...
     

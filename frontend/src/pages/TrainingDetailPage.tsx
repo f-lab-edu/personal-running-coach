@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { fetchTrainDetail } from '../api';
+import { fetchTrainDetail, deleteTrainSession } from '../api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -31,6 +31,7 @@ const TrainingDetailPage: React.FC = () => {
   const [detail, setDetail] = useState<TrainDetail | null>();
   const [loading, setLoading] = useState(!passedSession);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!session_id) return;
@@ -51,6 +52,25 @@ const TrainingDetailPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [session_id, passedSession]);
 
+  // Delete handler (API integration to be added)
+  const handleDelete = async () => {
+    if (!session_id) return;
+    setDeleting(true);
+    try {
+      const { status } = await deleteTrainSession(session_id);
+      if (status === 200) {
+        alert('Deleted successfully');
+        window.location.href = '/training'; // Redirect to home or list page
+      } else {
+        setError('Delete failed: ' + status);
+      }
+    } catch (e:any) {
+      setError(e.message || 'Delete failed');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!detail) return <div>No data found.</div>;
@@ -58,13 +78,22 @@ const TrainingDetailPage: React.FC = () => {
 
   // Session summary (from passedSession or fetched detail)
   const summary = (
-    <div style={{ marginBottom: 24, background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
-      <h2>Training Summary</h2>
-      <div><b>분석 결과:</b> {passedSession?.analysis_result || '-'}</div>
-      <div><b>일자:</b> {passedSession?.train_date}</div>
-      <div><b>거리:</b> {passedSession?.distance ?? '-'} m</div>
-      <div><b>평균 속도:</b> {passedSession?.avg_speed ?? '-'} m/s</div>
-      <div><b>총 시간:</b> {passedSession?.total_time ?? '-'} 초</div>
+    <div style={{ position: 'relative', marginBottom: 24 }}>
+      <button
+        style={{ position: 'absolute', top: 12, right: 12, padding: '8px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, zIndex: 2 }}
+        onClick={handleDelete}
+        disabled={deleting}
+      >
+        {deleting ? 'Deleting...' : 'Delete'}
+      </button>
+      <div style={{ background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
+        <h2>Training Summary</h2>
+        <div><b>분석 결과:</b> {passedSession?.analysis_result || '-'}</div>
+        <div><b>일자:</b> {passedSession?.train_date}</div>
+        <div><b>거리:</b> {passedSession?.distance ?? '-'} m</div>
+        <div><b>평균 속도:</b> {passedSession?.avg_speed ?? '-'} m/s</div>
+        <div><b>총 시간:</b> {passedSession?.total_time ?? '-'} 초</div>
+      </div>
     </div>
   );
 

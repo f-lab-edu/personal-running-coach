@@ -168,6 +168,18 @@ export async function postNewSchedule(data: {
   });
 }
 
+
+// Delete train session (DELETE /trainsession/delete?session_id=...)
+export async function deleteTrainSession(session_id: string) {
+  return fetchWithAuth(`${API_BASE_URL}/trainsession/delete?session_id=${session_id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+
 export async function loginWithEmail(email: string, pwd: string) {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',

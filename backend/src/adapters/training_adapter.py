@@ -136,19 +136,21 @@ class TrainingAdapter(TrainingPort):
         
         
         
-    def delete_session(self, user_id:UUID, session_id:int)->bool:
+    async def delete_session(self, user_id:UUID, session_id:UUID)->bool:
         """세션 삭제"""
-        ...
+        try:
+            train_session = await repo.get_train_session_by_id(session_id=session_id, db=self.db)
+
+            # check
+            if train_session.user_id != user_id:
+                raise InternalError(context=f"error delete session. user_id {user_id} not matched to {train_session.user_id} ")
+            res = await repo.delete_train_session(train_session=train_session,
+                                                     db=self.db)
+            return res
+        
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(context="error delete session", original_exception=e)
     
     
-    # ### 훈련 목표
-    # def set_training_goal(self, user_id:UUID, training_goal:TrainGoal)->bool:
-    #     ...
-        
-    # def update_training_goal(self, user_id:UUID, training_goal:TrainGoal)->bool:
-    #     ...
-        
-    # def get_training_goal(self, user_id:UUID)->TrainGoal:
-    #     ...
-        
-        

@@ -92,10 +92,11 @@ async def update_train_session(train_session: TrainSession, db: AsyncSession) ->
         raise DBError(context=f"[update_train_session] failed activity_id={train_session.activity_id}", original_exception=e)
 
 
-async def delete_train_session(train_session: TrainSession, db: AsyncSession) -> None:
+async def delete_train_session(train_session: TrainSession, db: AsyncSession) -> bool:
     try:
         await db.delete(train_session)
         await db.commit()
+        return True
     except Exception as e:
         await db.rollback()
         raise DBError(context=f"[delete_train_session] failed activity_id={train_session.activity_id}", original_exception=e)
