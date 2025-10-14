@@ -74,6 +74,19 @@ async def get_train_session_by_id(session_id: UUID, db: AsyncSession) -> TrainSe
     except Exception as e:
         raise DBError(context=f"[get_train_session_by_id] failed id={session_id}", original_exception=e)
 
+async def get_train_session_by_activity_id(user_id:UUID, activity_id: int, provider:str, db: AsyncSession) -> TrainSession | None:
+    try:
+        res = await db.execute(
+            select(TrainSession).where(
+                and_(TrainSession.user_id == user_id, 
+                     TrainSession.activity_id == activity_id,
+                     TrainSession.provider == provider
+                     )
+            ))
+        return res.scalar_one_or_none()
+    except Exception as e:
+        raise DBError(context=f"[get_session_by_activity_id] failed id={user_id} : {activity_id}", original_exception=e)
+
 async def get_train_sessions_by_user(user_id: UUID, db: AsyncSession) -> list[TrainSession]:
     try:
         res = await db.execute(select(TrainSession).where(TrainSession.user_id == user_id))

@@ -79,9 +79,30 @@ class TrainingAdapter(TrainingPort):
             raise InternalError(context="error update_session", original_exception=e)
            
         
-    def get_session_by_id(self, user_id:UUID, session_id:UUID, sport_type:str)->TrainResponse:
+    async def get_session_by_activity_id(self, user_id:UUID, activity_id:int, provider:str)->TrainResponse:
         """훈련 세션 받기"""
-        ...
+        try:
+            session = await repo.get_train_session_by_activity_id(user_id=user_id, 
+                                                                activity_id=activity_id,
+                                                                provider=provider,
+                                                                db=self.db
+                                                                )
+            if session is None:
+                return None
+            return TrainResponse(
+                session_id=session.id,
+                train_date=session.train_date,
+                distance=session.distance,
+                avg_speed=session.avg_speed,
+                total_time=session.total_time,
+                activity_title=session.activity_title,
+                analysis_result=session.analysis_result
+            )
+
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(context="error get_session_by_activity_id", original_exception=e)
         
     async def get_session_detail(self, user_id:UUID, session_id:UUID)->TrainDetailResponse:
         """훈련 세션 세부 정보 받기 (stream, Lap)"""

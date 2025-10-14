@@ -65,6 +65,14 @@ class TrainSessionHandler:
             # 각 액티비티
             # schedules = []
             for activity in activity_list:
+                
+                # 기존 db에 있는지 확인. 이미 fetch 됐었던 데이터면 패스
+                db_session = await self.db_adapter.get_session_by_activity_id(user_id=payload.user_id,
+                                                                        provider="strava",
+                                                                        activity_id=activity.activity_id)
+                if db_session is not None:
+                    continue 
+
                 lap_data, stream_data = await asyncio.gather(
                     self.data_adapter.fetch_activity_lap(access_token=access_token,
                                                             activity_id=activity.activity_id),

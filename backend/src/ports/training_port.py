@@ -30,7 +30,7 @@ class TrainingPort(ABC):
         ...
         
     @abstractmethod
-    async def get_session_by_id(self, user_id:UUID, session_id:UUID, sport_type:str)->TrainResponse:
+    async def get_session_by_activity_id(self, user_id:UUID, activity_id:int, provider:str)->TrainResponse:
         """훈련 세션 받기"""
         ...
         
