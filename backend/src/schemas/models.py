@@ -151,3 +151,14 @@ class TrainDetailResponse(BaseModel):
 class LLMResponse(BaseModel):
     sessions:Optional[List[LLMSessionResult]] = None
     advice:Optional[str] = None
+
+class FeedResponse(BaseModel):
+    feed_id:UUID
+    user_id:UUID
+    created_at:datetime
+    train_date:datetime
+    title:str
+    train_summary:str
+    note:Optional[str] = None
+    likes_count:int
+    my_like: bool
