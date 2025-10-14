@@ -139,6 +139,9 @@ class Feed(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False)
         )
     title:str
+    train_date: datetime = Field(default_factory=lambda : datetime.now(timezone.utc),
+                                  sa_column=Column(DateTime(timezone=True))
+                                )
     train_summary:str
     note: Optional[str] = None
 

@@ -1,8 +1,8 @@
-"""create feed table
+"""feed table
 
-Revision ID: 4d791fb38f5e
+Revision ID: d0e09344ac3d
 Revises: 100e36ab38b4
-Create Date: 2025-10-14 15:03:49.798391
+Create Date: 2025-10-14 16:25:16.860738
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4d791fb38f5e'
+revision: str = 'd0e09344ac3d'
 down_revision: Union[str, Sequence[str], None] = '100e36ab38b4'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,6 +27,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('title', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('train_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('train_summary', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('note', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
