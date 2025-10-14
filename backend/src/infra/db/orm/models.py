@@ -21,7 +21,9 @@ class User(SQLModel, table=True):
     tokens: List["Token"] = Relationship(back_populates="user", cascade_delete=True)
     third_party_tokens: List["ThirdPartyToken"] = Relationship(back_populates="user", cascade_delete=True)
     train_sessions: List["TrainSession"] = Relationship(back_populates="user", cascade_delete=True)
-    llms: List["LLM"] = Relationship(back_populates="user")
+    llms: List["LLM"] = Relationship(back_populates="user", cascade_delete=True)
+    feeds: List["Feed"] = Relationship(back_populates="user", cascade_delete=True)
+    feed_likes: List["FeedLikes"] = Relationship(back_populates="user", cascade_delete=True)
 
 class UserInfo(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -96,6 +98,7 @@ class TrainSessionStream(SQLModel, table=True):
     distance: Optional[List[float]] = Field(default=None, sa_column=Column(JSON))
     velocity: Optional[List[float]] = Field(default=None, sa_column=Column(JSON))
     altitude: Optional[List[float]] = Field(default=None, sa_column=Column(JSON))
+
     session: Optional[TrainSession] = Relationship(back_populates="stream")
     
 class TrainSessionLap(SQLModel, table=True):
@@ -127,3 +130,36 @@ class LLM(SQLModel, table=True):
     coach_advice: Optional[str] = None
 
     user: Optional[User] = Relationship(back_populates="llms")
+
+class Feed(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),  # tz-aware 유지
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+        )
+    title:str
+    train_summary:str
+    note: Optional[str] = None
+
+    user: Optional[User] = Relationship(back_populates="feeds")
+    likes: List["FeedLikes"] = Relationship(back_populates="feed")
+
+class FeedLikes(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    feed_id: UUID = Field(foreign_key="feed.id")
+    user_id: UUID = Field(foreign_key="user.id")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),  # tz-aware 유지
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+        )
+    
+    user: Optional[User] = Relationship(back_populates="feed_likes")
+    feed: Optional[Feed] = Relationship(back_populates="likes")
+
+    __table_args__ = (
+        UniqueConstraint("feed_id", "user_id", name="uq_feed_user_like"),
+    )
+
+
+    
