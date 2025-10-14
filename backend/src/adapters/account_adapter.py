@@ -180,7 +180,8 @@ class AccountAdapter(AccountPort):
             
             if name is not None:
                 user.name = name
-            if pwd is not None and user.provider == "local":
+            if pwd is not None and pwd != "" and  user.provider == "local":
+                # TODO: pwd check
                 user.hashed_pwd = await hash_password(pwd)
             await repo.save_user(user=user, db=self.db)
 
