@@ -7,3 +7,7 @@ ETAG_TTL_SEC = 60 * 60 * 24
 ETAG_TRAIN_SESSION = "train_session"
 
 PLATFORM = ['facebook', 'kakao', ]
+
+
+# LLM prediction limit
+LLM_LIMIT_DAY = 7
