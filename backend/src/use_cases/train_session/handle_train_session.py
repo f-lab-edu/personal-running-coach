@@ -4,6 +4,7 @@ training data 관련 유스케이스
 from typing import List
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
+import asyncio
 
 from adapters.training_data_adapter import TrainingDataPort
 from adapters.training_adapter import TrainingPort
@@ -64,13 +65,13 @@ class TrainSessionHandler:
             # 각 액티비티
             # schedules = []
             for activity in activity_list:
-                
-                lap_data = await self.data_adapter.fetch_activity_lap(access_token=access_token,
-                                                         activity_id=activity.activity_id)
-                
-                stream_data = await self.data_adapter.fetch_activity_stream(access_token=access_token,
-                                                         activity_id=activity.activity_id)
-                
+                lap_data, stream_data = await asyncio.gather(
+                    self.data_adapter.fetch_activity_lap(access_token=access_token,
+                                                            activity_id=activity.activity_id),
+                    
+                    self.data_adapter.fetch_activity_stream(access_token=access_token,
+                                                            activity_id=activity.activity_id)
+                )
                 
                 train_res = self.analyzer.analyze(activity=activity,
                                                             laps=lap_data,

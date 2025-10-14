@@ -38,8 +38,8 @@ class TrainingAdapter(TrainingPort):
             #     repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream),
             #     repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
             # )
-            repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream)
-            repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
+            await repo.add_train_session_stream(db=self.db,session_id=session.id,stream=stream)
+            await repo.add_train_session_lap(db=self.db,session_id=session.id,laps=laps)
             
             return True
             
