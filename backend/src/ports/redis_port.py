@@ -18,3 +18,7 @@ class RedisPort(ABC):
     @abstractmethod
     async def remove_user_etag(self, user_id: UUID, page: str):
         ...
+
+    @abstractmethod
+    async def incr_etag_version(self, user_id:UUID, page:str)->str:
+        ...

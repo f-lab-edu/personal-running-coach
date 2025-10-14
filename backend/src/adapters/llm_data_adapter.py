@@ -10,7 +10,7 @@ from ports.llm_data_port import LLMDataPort
 from infra.db.orm.models import LLM
 from infra.db.storage import llm_repo as repo
 from config.exceptions import InternalError, CustomError
-
+from config.constants import LLM_LIMIT_DAY
 
 class LLMDataAdapter(LLMDataPort):
     def __init__(self, db:AsyncSession):
@@ -59,7 +59,7 @@ class LLMDataAdapter(LLMDataPort):
             raise InternalError(context="error get_llm_predict", original_exception=e)
 
     
-    async def is_llm_call_available(self, user_id:UUID, limiter_day:int=7) -> bool:
+    async def is_llm_call_available(self, user_id:UUID) -> bool:
         try:
             saved = await repo.get_llm_predict_by_user_id(db=self.db, user_id=user_id)
 
@@ -67,8 +67,8 @@ class LLMDataAdapter(LLMDataPort):
                 return True
             
             # 정해진 기일 내 한번 리밋
-            next_available = saved.executed_at + timedelta(days=limiter_day)
-            return datetime.now(timezone.utc).replace(tzinfo=None) >= next_available
+            next_available = saved.executed_at + timedelta(days=LLM_LIMIT_DAY)
+            return datetime.now(timezone.utc) >= next_available
         except CustomError:
             raise
         except Exception as e:

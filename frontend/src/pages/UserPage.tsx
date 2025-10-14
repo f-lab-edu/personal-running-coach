@@ -17,7 +17,11 @@ const UserPage: React.FC = () => {
 
 	useEffect(() => {
 		fetchProfile()
-			.then(data => {
+			.then(({status, data}) => {
+				if (status !== 200) {
+					setError(data?.detail || `API Error: ${status}`);
+					return;
+				}
 				setProfile(data);
 				setForm({
 					name: data.name,
@@ -25,12 +29,11 @@ const UserPage: React.FC = () => {
 				});
 			})
 			.catch(e => setError(e.message));
+
 	}, []);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
-		console.log(`${name}, ${value}`);
-		console.log(profile);
 		if (infoKeys.includes(name as keyof UserInfoData)) {
 			// 'height' 같은 키는 이 블록으로
 			setForm(f => ({
@@ -51,13 +54,18 @@ const UserPage: React.FC = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await updateProfile({
+			const {status, data} = await updateProfile({
 				name: form.name,
 				pwd: form.pwd,
 				info: form.info,
 			});
-			setProfile(res);
+
+			if (status !== 200) {
+				setError(`api error ${status} ${data?.detail}`);
+			} 
+			setProfile(data);
 			setEdit(false);
+			
 		} catch (e: any) {
 			setError(e.message);
 		} finally {

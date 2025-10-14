@@ -40,7 +40,13 @@ const TrainingDetailPage: React.FC = () => {
     }
     setLoading(true);
     fetchTrainDetail(session_id)
-      .then(data => setDetail(data))
+      .then(({status, data}) => {
+        if (status !== 200) {
+          setError(`API error ${status} ${data}`);
+          console.log(`API error ${status} ${data}`);
+        }  
+        setDetail(data)
+      })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [session_id, passedSession]);

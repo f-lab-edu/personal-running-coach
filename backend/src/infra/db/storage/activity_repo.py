@@ -15,19 +15,24 @@ async def add_train_session(db: AsyncSession,
                             activity:ActivityData,
                             ) -> TrainSession:
     try:
-
-        session = TrainSession(
-            user_id=user_id,
-            activity_id=activity.activity_id,
-            provider=activity.provider,
-            train_date=activity.start_date.replace(tzinfo=None),
-            distance=activity.distance,
-            avg_speed=activity.average_speed,
-            total_time = activity.elapsed_time,
-            activity_title=activity.activity_title,
-            analysis_result=activity.analysis_result
-        )
         
+        session_data = {
+            "user_id": user_id,
+            "provider": activity.provider,
+            "train_date": activity.start_date,
+            "distance": activity.distance,
+            "avg_speed": activity.average_speed,
+            "total_time": activity.elapsed_time,
+            "activity_title": activity.activity_title,
+            "analysis_result": activity.analysis_result,
+        }
+
+        # local이면 activity_id 아예 빼서 DB DEFAULT 적용
+        if activity.provider == "strava":
+            session_data["activity_id"] = activity.activity_id
+        
+        session = TrainSession(**session_data)
+
         db.add(session)
         await db.commit()  ## increment + add 한번에 커밋
         await db.refresh(session)

@@ -65,8 +65,9 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
         activity_title: form.activity_title,
         analysis_result: form.detail,
       };
-      await postNewSchedule(reqBody);
-      navigate('/training');
+      const {status, data} = await postNewSchedule(reqBody);
+      if (status !== 200) setError(`failed adding new schedule ${data?.detail}`);
+      else navigate('/training');
     } catch (err: any) {
       setError(err?.message || 'Failed to add training session');
     }

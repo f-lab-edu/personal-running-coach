@@ -3,7 +3,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 # ETAG TTL
-ETAG_TTL_SEC = 3600
+ETAG_TTL_SEC = 60 * 60 * 24
 ETAG_TRAIN_SESSION = "train_session"
 
 PLATFORM = ['facebook', 'kakao', ]
+
+
+# LLM prediction limit
+LLM_LIMIT_DAY = 7

@@ -4,6 +4,7 @@ training data 관련 유스케이스
 from typing import List
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
+import asyncio
 
 from adapters.training_data_adapter import TrainingDataPort
 from adapters.training_adapter import TrainingPort
@@ -18,7 +19,6 @@ from schemas.models import (TokenPayload,
 from use_cases.auth.auth_strava import StravaHandler
 from domains.data_analyzer import DataAnalyzer
 from config.exceptions import (CustomError, InternalError, NotModifiedError, ValidationError)
-from infra.etag import generate_etag, serialize_train_response
 from config.constants import ETAG_TRAIN_SESSION
 
 
@@ -65,13 +65,13 @@ class TrainSessionHandler:
             # 각 액티비티
             # schedules = []
             for activity in activity_list:
-                
-                lap_data = await self.data_adapter.fetch_activity_lap(access_token=access_token,
-                                                         activity_id=activity.activity_id)
-                
-                stream_data = await self.data_adapter.fetch_activity_stream(access_token=access_token,
-                                                         activity_id=activity.activity_id)
-                
+                lap_data, stream_data = await asyncio.gather(
+                    self.data_adapter.fetch_activity_lap(access_token=access_token,
+                                                            activity_id=activity.activity_id),
+                    
+                    self.data_adapter.fetch_activity_stream(access_token=access_token,
+                                                            activity_id=activity.activity_id)
+                )
                 
                 train_res = self.analyzer.analyze(activity=activity,
                                                             laps=lap_data,
@@ -87,7 +87,7 @@ class TrainSessionHandler:
                                              )
                 
             # 데이터 수정 시점 : etag 만료 
-            await self.redis_adapter.remove_user_etag(user_id=payload.user_id,
+            await self.redis_adapter.incr_etag_version(user_id=payload.user_id,
                                                 page=ETAG_TRAIN_SESSION)
 
             ## 사용자에게 리턴
@@ -104,27 +104,28 @@ class TrainSessionHandler:
         """db 에서 스케줄 받기
             etag 받아서 확인. 변경사항 없을시 304 NotModified 에러 출력.
             사용자 etag 와 데이터 etag 가 매치하지 않을 경우 데이터 내보내기 
+            
+            return: {"etag": str, "data": List[TrainResponse]}
         """
-        # {"etag": str, "data": List[TrainResponse]}
         try:
             redis_etag = await self.redis_adapter.get_user_etag(user_id=payload.user_id,page=ETAG_TRAIN_SESSION)
-            
             # 사용자 etag 가 서버와 매칭할 경우 304 
             if redis_etag is not None and etag is not None and redis_etag == etag :
                 raise NotModifiedError(context="data not modified")
 
-            # etag 미스매치. etag 생성 및 데이터 + etag 반환
+            # etag 미스매치. 데이터 불러오기
             data =  await self.db_adapter.get_sessions_by_date(user_id=payload.user_id,
                                                 start_date=start_date)
-            data_serializable = [serialize_train_response(item) for item in data]
-            etag = await generate_etag(data_serializable)
-            print(etag)
-            await self.redis_adapter.set_user_etag(user_id=payload.user_id,
-                                                page=ETAG_TRAIN_SESSION,
-                                                etag= etag)
+            
+            # 처음 요청시
+            if redis_etag is None:
+                redis_etag = await self.redis_adapter.incr_etag_version(user_id=payload.user_id,
+                                                                  page=ETAG_TRAIN_SESSION)
 
+
+            # 데이터 + 갱신 etag 반환 
             return TrainSessionResponse(
-                etag=etag,
+                etag=redis_etag,
                 data=data
             )
 
@@ -152,8 +153,8 @@ class TrainSessionHandler:
                                                         session=session
                                                         )
         
-            # redis etag 삭제 
-            await self.redis_adapter.remove_user_etag(user_id=payload.user_id,
+            # redis etag 버전 갱신
+            await self.redis_adapter.incr_etag_version(user_id=payload.user_id,
                                                 page=ETAG_TRAIN_SESSION)
             return res
 
