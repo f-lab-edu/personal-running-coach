@@ -109,6 +109,13 @@ class TrainRequest(BaseModel):
     activity_title:Optional[str] = None
     analysis_result: Optional[str] = None
 
+# 피드 요청
+class FeedRequest(BaseModel):
+    train_date:datetime
+    title:str
+    train_summary:str
+    note:Optional[str] = ""
+
 
 
 ############### 응답모델

@@ -7,7 +7,7 @@ from datetime import datetime
 from ports.feed_port import FeedPort
 from infra.db.storage import feed_repo as repo
 from infra.db.orm.models import Feed, FeedLikes
-from config.exceptions import CustomError, InternalError
+from config.exceptions import CustomError, InternalError, NotFoundError
 
 class FeedAdapter(FeedPort):
     def __init__(self, db:AsyncSession):
@@ -50,7 +50,7 @@ class FeedAdapter(FeedPort):
     async def delete_feed(self, feed_id: UUID) -> bool:
         '''피드 삭제'''
         try:
-            return await repo.delete_feed(feed_id=feed_id)
+            return await repo.delete_feed(db=self.db, feed_id=feed_id)
         except CustomError:
             raise
         except Exception as e:
@@ -58,21 +58,40 @@ class FeedAdapter(FeedPort):
 
 
 
-    async def get_feed(self, feed_id: UUID, user_id: UUID) -> FeedResponse:
+    async def get_feed(self, user_id:UUID, feed_id: UUID) -> FeedResponse:
         '''피드 받기'''
-        ...
+        try:
+            res = await repo.get_feed(db=self.db, user_id=user_id, feed_id=feed_id)
+            if not res:
+                raise NotFoundError(detail=f"requested feed does not exist")
+            
+            feed, likes_count, my_like = res
+            
+            return FeedResponse(
+                feed_id=feed.id,
+                user_id=feed.user_id,
+                created_at=feed.created_at,
+                train_date=feed.train_date,
+                title=feed.title,
+                train_summary=feed.train_summary,
+                note=feed.note,
+                likes_count=likes_count,
+                my_like=my_like
+            )
 
-    async def get_feeds_with_likes(
-        self,
-        user_id: UUID,
-        offset: int = 0,
-        limit: int = 20
-    ) -> List[FeedResponse]:
+
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(context="error get_feed", original_exception=e)
+        
+
+    async def get_feeds_with_likes(self,user_id: UUID,offset: int = 0,limit: int = 20) -> List[FeedResponse]:
         '''피드 리스트 받기'''
         try:
             feeds = await repo.get_feeds_with_likes(
                                     db=self.db,
-                                    current_user_id=user_id,
+                                    user_id=user_id,
                                     offset=offset,
                                     limit=limit
                                     )

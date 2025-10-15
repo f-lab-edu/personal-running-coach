@@ -35,12 +35,12 @@ class FeedPort(ABC):
         ...
 
     @abstractmethod
-    async def get_feed(self, feed_id: UUID, user_id: UUID) -> FeedResponse:
+    async def get_feed(self, user_id:UUID, feed_id: UUID) -> FeedResponse:
         '''피드 받기'''
         ...
 
     @abstractmethod
-    async def get_feeds(
+    async def get_feeds_with_likes(
         self,
         user_id: UUID,
         limit: int = 20,

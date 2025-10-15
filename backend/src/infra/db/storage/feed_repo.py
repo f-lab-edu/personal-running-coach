@@ -1,13 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 from uuid import UUID
 from typing import List, Tuple
-
+from sqlalchemy.exc import IntegrityError
 
 
 from infra.db.orm.models import FeedLikes, Feed
-from config.exceptions import DBError
+from config.exceptions import DBError, DuplicateError
 
 
 # Feed CRUD
@@ -53,28 +53,30 @@ async def delete_feed(db: AsyncSession, feed_id: UUID) -> bool:
 		await db.rollback()
 		raise DBError(context=f"[delete_feed] failed feed_id={feed_id}", original_exception=e)
 
-async def get_feed(db: AsyncSession, feed_id: UUID) -> Feed | None:
+async def get_feed(db: AsyncSession, user_id:UUID, feed_id: UUID) -> Tuple[Feed, int, bool]:
 	try:
-		res = await db.execute(select(Feed).where(Feed.id == feed_id))
-		return res.scalar_one_or_none()
+		FL = aliased(FeedLikes)
+		stmt = (
+			select(
+				Feed,
+				func.count(FL.id).label("likes_count"),
+				func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like")
+			)
+			.outerjoin(FL, FL.feed_id == Feed.id)
+			.where(Feed.id == feed_id)
+			.group_by(Feed.id)
+		)
+		res = await db.execute(stmt)
+		return res.one_or_none()  # (Feed, likes_count, my_like)
 	except Exception as e:
 		raise DBError(context=f"[get_feed] failed feed_id={feed_id}", original_exception=e)
 
-async def get_feeds(db: AsyncSession, offset: int = 0, limit: int = 10) -> list[Feed]:
-	try:
-		res = await db.execute(select(Feed).order_by(Feed.created_at.desc()).offset(offset).limit(limit))
-		return res.scalars().all()
-	except Exception as e:
-		raise DBError(context=f"[get_feeds] failed", original_exception=e)
-	
 
-
-async def get_feeds_with_likes(
-    db: AsyncSession,
-    current_user_id: UUID,
-    offset: int = 0,
-    limit: int = 20
-) -> List[Tuple[Feed, int, bool]]:
+async def get_feeds_with_likes(db: AsyncSession,
+								user_id: UUID,
+								offset: int = 0,
+								limit: int = 20
+							) -> List[Tuple[Feed, int, bool]]:
     """
     Feed 리스트 + likes_count + my_like를 한 번의 쿼리로 가져오기
     반환: List of Tuple(Feed, likes_count, my_like)
@@ -85,7 +87,7 @@ async def get_feeds_with_likes(
             select(
                 Feed,
                 func.count(FL.id).label("likes_count"),
-                func.bool_or(FL.user_id == current_user_id).label("my_like")
+                func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like")
             )
             .outerjoin(FL, FL.feed_id == Feed.id)
             .group_by(Feed.id)
@@ -99,20 +101,27 @@ async def get_feeds_with_likes(
         raise DBError(context="[get_feeds_with_likes] failed", original_exception=e)
 
 
-
-# FeedLikes CRUD
 async def create_feed_like(db: AsyncSession, feed_id: UUID, user_id: UUID) -> bool:
 	try:
 		feed_like = FeedLikes(feed_id=feed_id, user_id=user_id)
 		db.add(feed_like)
 		await db.commit()
-		await db.refresh(feed_like)
-		return feed_like
+		return True
+	except IntegrityError:
+		await db.rollback()
+		raise DuplicateError(detail="liked already.")
+
 	except Exception as e:
 		await db.rollback()
 		raise DBError(context=f"[create_feed_like] failed feed_id={feed_id}, user_id={user_id}", original_exception=e)
 
 async def delete_feed_like(db: AsyncSession, feed_id: UUID, user_id: UUID) -> bool:
+	"""
+    특정 피드에 대한 사용자의 좋아요 삭제
+    반환값:
+        True  - 삭제 성공
+        False - 삭제할 좋아요가 없음
+    """
 	try:
 		res = await db.execute(select(FeedLikes).where(and_(FeedLikes.feed_id == feed_id, FeedLikes.user_id == user_id)))
 		feed_like = res.scalar_one_or_none()

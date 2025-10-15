@@ -146,7 +146,7 @@ class Feed(SQLModel, table=True):
     note: Optional[str] = None
 
     user: Optional[User] = Relationship(back_populates="feeds")
-    likes: List["FeedLikes"] = Relationship(back_populates="feed")
+    likes: List["FeedLikes"] = Relationship(back_populates="feed", cascade_delete=True)
 
 class FeedLikes(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
