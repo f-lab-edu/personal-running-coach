@@ -6,7 +6,7 @@ from uuid import UUID
 from adapters import FeedAdapter
 from infra.db.storage.session import get_session
 from use_cases.feed import FeedHandler
-from use_cases.auth.dependencies import get_test_user as get_current_user
+from use_cases.auth.dependencies import get_current_user
 from schemas.models import TokenPayload, FeedResponse, FeedRequest
 from config.logger import get_logger
 from config.exceptions import CustomError, DuplicateError
@@ -28,7 +28,7 @@ async def fetch_feeds_pages(
     payload: TokenPayload = Depends(get_current_user),
     handler:FeedHandler=Depends(get_handler),
     page_number:int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(5, ge=1, le=100),
     ):
     try:
         return await handler.fetch_feeds(
