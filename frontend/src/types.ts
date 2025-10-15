@@ -1,3 +1,16 @@
+// Feed types
+export interface FeedResponse {
+  feed_id: string;
+  user_id: string;
+  user_name:string;
+  created_at: string;
+  train_date: string;
+  title: string;
+  train_summary: string;
+  note?: string;
+  likes_count: number;
+  my_like: boolean;
+}
 // ConnectPage
 export interface ConnectPageProps {
 //   user: any;
