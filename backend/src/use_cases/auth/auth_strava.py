@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.exceptions import CustomError, InternalError, NotFoundError, ValidationError
 from config.settings import security
-from adapters import StravaAdapter
+from ports.training_data_port import TrainingDataPort
 from schemas.models import TokenPayload
 from infra.security import encrypt_token, decrypt_token
 from infra.db.storage.third_party_token_repo import (
@@ -14,7 +14,7 @@ from infra.db.storage.third_party_token_repo import (
 
 
 class StravaHandler:
-    def __init__(self, db: AsyncSession, adapter: StravaAdapter):
+    def __init__(self, db: AsyncSession, adapter: TrainingDataPort):
         self.db = db
         self.strava_adapter = adapter
 

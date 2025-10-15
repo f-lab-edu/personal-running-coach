@@ -32,7 +32,7 @@ from sqlmodel import SQLModel
 target_metadata = SQLModel.metadata
 from src.infra.db.orm.models import (
     User, UserInfo, Token, ThirdPartyToken, TrainSession, 
-    TrainSessionLap, TrainSessionStream, LLM, 
+    TrainSessionLap, TrainSessionStream, LLM, Feed, FeedLikes
 )
 
 # other values from the config, defined by the needs of env.py,

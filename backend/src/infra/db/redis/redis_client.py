@@ -9,7 +9,7 @@ import fakeredis
 """
 RUN_ENV = os.getenv("RUN_ENV", "local")
 FAKE_REDIS = RUN_ENV == "local"
-print(FAKE_REDIS)
+print("fakeredis:",FAKE_REDIS)
 
 redis_instance: Redis | None = None
 

@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage.tsx';
 import SignupPage from './pages/SignupPage.tsx';
 import ConnectPage from './pages/ConnectPage.tsx';
 import TrainingPage from './pages/TrainingPage.tsx';
+import FeedPage from './pages/FeedPage';
 import CallbackPage from './pages/CallbackPage.tsx';
 import StravaCallback from './pages/StravaCallbackPage.tsx';
 import TrainingDetailPage from './pages/TrainingDetailPage';
@@ -40,7 +41,8 @@ const LeftNav = () => (
             <li><Link to="/user">User Profile</Link></li>
             <li><Link to="/signup">Signup</Link></li>
             <li><Link to="/connect">Connect</Link></li>
-            <li><Link to="/training">training</Link></li>
+            <li><Link to="/training">Training</Link></li>
+            <li><Link to="/feed">Feed</Link></li>
             <li><Link to="/analysis">Analysis</Link></li>
         </ul>
     </nav>
@@ -107,6 +109,7 @@ const App: React.FC = () => {
                         <Route path="/training" element={<TrainingPage />} />
                         <Route path="/training/add" element={<TrainingAddPage user={user} />} />
                         <Route path="/training/:session_id" element={<TrainingDetailPage />} />
+                        <Route path="/feed" element={<FeedPage user={user} />} />
                         <Route path="/analysis" element={<AnalysisPage />} />
                     </Routes>
                 </div>

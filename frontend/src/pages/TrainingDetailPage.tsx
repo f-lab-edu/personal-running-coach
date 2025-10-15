@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { fetchTrainDetail } from '../api';
+import { fetchTrainDetail, deleteTrainSession, createFeed } from '../api';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -31,6 +31,11 @@ const TrainingDetailPage: React.FC = () => {
   const [detail, setDetail] = useState<TrainDetail | null>();
   const [loading, setLoading] = useState(!passedSession);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
+  const [sharing, setSharing] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session_id) return;
@@ -51,6 +56,53 @@ const TrainingDetailPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [session_id, passedSession]);
 
+  // Delete handler
+  const handleDelete = async () => {
+    if (!session_id) return;
+    setDeleting(true);
+    try {
+      const { status } = await deleteTrainSession(session_id);
+      if (status === 200) {
+        alert('Deleted successfully');
+        window.location.href = '/training';
+      } else {
+        setError('Delete failed: ' + status);
+      }
+    } catch (e:any) {
+      setError(e.message || 'Delete failed');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Share handler
+  const handleShare = async () => {
+    if (!detail) return;
+    setSharing(true);
+    setShareError(null);
+    try {
+      const trainDate = String(detail.train_date || passedSession?.train_date || '');
+      const feedData = {
+        train_date: trainDate,
+        title: detail.activity_title || passedSession?.activity_title || 'Training',
+        train_summary: detail.analysis_result || passedSession?.analysis_result || '',
+        note: noteRef.current?.value || '',
+      };
+      const { status } = await createFeed(feedData);
+      if (status === 200 || status === 201) {
+        setShowModal(false);
+        if (noteRef.current) noteRef.current.value = '';
+        alert('Feed shared successfully!');
+      } else {
+        setShareError('Failed to share feed.');
+      }
+    } catch (e:any) {
+      setShareError(e.message || 'Failed to share feed.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!detail) return <div>No data found.</div>;
@@ -58,13 +110,72 @@ const TrainingDetailPage: React.FC = () => {
 
   // Session summary (from passedSession or fetched detail)
   const summary = (
-    <div style={{ marginBottom: 24, background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
-      <h2>Training Summary</h2>
-      <div><b>분석 결과:</b> {passedSession?.analysis_result || '-'}</div>
-      <div><b>일자:</b> {passedSession?.train_date}</div>
-      <div><b>거리:</b> {passedSession?.distance ?? '-'} m</div>
-      <div><b>평균 속도:</b> {passedSession?.avg_speed ?? '-'} m/s</div>
-      <div><b>총 시간:</b> {passedSession?.total_time ?? '-'} 초</div>
+    <div style={{ position: 'relative', marginBottom: 24 }}>
+      <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8, zIndex: 2 }}>
+        <button
+          style={{ padding: '8px 16px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}
+          onClick={() => setShowModal(true)}
+        >
+          Share
+        </button>
+        <button
+          style={{ padding: '8px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}
+          onClick={handleDelete}
+          disabled={deleting}
+        >
+          {deleting ? 'Deleting...' : 'Delete'}
+        </button>
+      </div>
+      <div style={{ background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
+        <h2>Training Summary</h2>
+        <div><b>분석 결과:</b> {passedSession?.analysis_result || '-'}</div>
+        <div><b>일자:</b> {passedSession?.train_date}</div>
+        <div><b>거리:</b> {passedSession?.distance ?? '-'} m</div>
+        <div><b>평균 속도:</b> {passedSession?.avg_speed ?? '-'} m/s</div>
+        <div><b>총 시간:</b> {passedSession?.total_time ?? '-'} 초</div>
+      </div>
+      {/* Share Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.25)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 8, padding: 32, minWidth: 340, boxShadow: '0 2px 16px #aaa', position: 'relative' }}>
+            <h3 style={{ marginBottom: 18 }}>Create Feed</h3>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontWeight: 500 }}>Train Date</label>
+              <div style={{ padding: '8px 0', color: '#333', background: '#f5f5f5', borderRadius: 4 }}>{String(detail?.train_date || passedSession?.train_date)}</div>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontWeight: 500 }}>Title</label>
+              <div style={{ padding: '8px 0', color: '#333', background: '#f5f5f5', borderRadius: 4 }}>{detail?.activity_title || passedSession?.activity_title || 'Training'}</div>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontWeight: 500 }}>Summary</label>
+              <div style={{ padding: '8px 0', color: '#333', background: '#f5f5f5', borderRadius: 4 }}>{detail?.analysis_result || passedSession?.analysis_result || ''}</div>
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontWeight: 500 }}>Note</label>
+              <textarea
+                ref={noteRef}
+                rows={3}
+                style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc', resize: 'vertical' }}
+                placeholder="Add your comments..."
+              />
+            </div>
+            {shareError && <div style={{ color: 'red', marginBottom: 10 }}>{shareError}</div>}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{ padding: '8px 16px', borderRadius: 4, background: '#eee', color: '#333', border: 'none', cursor: 'pointer' }}
+                disabled={sharing}
+              >Cancel</button>
+              <button
+                onClick={handleShare}
+                style={{ padding: '8px 16px', borderRadius: 4, background: '#1976d2', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+                disabled={sharing}
+              >{sharing ? 'Sharing...' : 'Share'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

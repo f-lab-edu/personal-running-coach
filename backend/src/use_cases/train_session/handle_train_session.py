@@ -65,6 +65,14 @@ class TrainSessionHandler:
             # 각 액티비티
             # schedules = []
             for activity in activity_list:
+                
+                # 기존 db에 있는지 확인. 이미 fetch 됐었던 데이터면 패스
+                db_session = await self.db_adapter.get_session_by_activity_id(user_id=payload.user_id,
+                                                                        provider="strava",
+                                                                        activity_id=activity.activity_id)
+                if db_session is not None:
+                    continue 
+
                 lap_data, stream_data = await asyncio.gather(
                     self.data_adapter.fetch_activity_lap(access_token=access_token,
                                                             activity_id=activity.activity_id),
@@ -165,6 +173,26 @@ class TrainSessionHandler:
 
     
 
+    async def delete_schedule(self, payload: TokenPayload, 
+                        session_id:UUID
+                        ):
+        """ 훈련 삭제"""
+        try:
+            res = await self.db_adapter.delete_session(user_id=payload.user_id,
+                                                       session_id=session_id
+                                                       )
+        
+            # redis etag 버전 갱신
+            await self.redis_adapter.incr_etag_version(user_id=payload.user_id,
+                                                page=ETAG_TRAIN_SESSION)
+            
+            return res
+            
+
+        except CustomError:
+            raise
+        except Exception as e:
+            raise InternalError(context="error delete schedule", original_exception=e)
 
 
     def update_schedule(self, payload: TokenPayload, 

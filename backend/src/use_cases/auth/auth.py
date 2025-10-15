@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID, uuid4
 
-from adapters import AccountAdapter, TokenAdapter
+
+from ports.account_port import AccountPort
+from ports.token_port import TokenPort
 from schemas.models import AccountResponse, LoginResponse, TokenResponse
 from config.exceptions import (DBError, CustomError, InternalError, NotFoundError, ValidationError)
 from infra.db.storage import repo
@@ -15,8 +17,8 @@ class AuthHandler():
     검증 핸들러.
     """
     def __init__(self, 
-                 account_adapter:AccountAdapter, 
-                 token_adapter:TokenAdapter,
+                 account_adapter:AccountPort, 
+                 token_adapter:TokenPort,
                  db:AsyncSession
                  ):
         self.db = db

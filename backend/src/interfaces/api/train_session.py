@@ -33,7 +33,7 @@ def get_handler(db:AsyncSession=Depends(get_session),
 
 # 스케줄 새로 로드
 @router.get("/fetch-new-schedules")
-async def fetch_schedule(
+async def fetch_new_schedule(
     date:Optional[int] = None,
     payload: TokenPayload = Depends(get_current_user),
     handler:TrainSessionHandler=Depends(get_handler)):
@@ -97,5 +97,21 @@ async def upload_new_schedule(
         raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
         logger.exception(f"upload session. {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.delete("/delete")
+async def delete_schedule(
+    session_id:UUID = None,
+    payload: TokenPayload = Depends(get_current_user),
+    handler:TrainSessionHandler=Depends(get_handler)):
+    try:
+        return await handler.delete_schedule(payload=payload, session_id=session_id)
+    except CustomError as e:
+        if e.original_exception:
+            logger.exception(f"{e.context} {str(e.original_exception)}")
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        logger.exception(f"delete session. {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     

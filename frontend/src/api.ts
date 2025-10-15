@@ -1,3 +1,4 @@
+
 import { API_BASE_URL } from './config';
 
 interface FetchWithAuthOptions extends RequestInit {
@@ -168,6 +169,18 @@ export async function postNewSchedule(data: {
   });
 }
 
+
+// Delete train session (DELETE /trainsession/delete?session_id=...)
+export async function deleteTrainSession(session_id: string) {
+  return fetchWithAuth(`${API_BASE_URL}/trainsession/delete?session_id=${session_id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+
 export async function loginWithEmail(email: string, pwd: string) {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -239,4 +252,34 @@ export async function connectStrava() {
   const res = await fetchWithAuth(`${API_BASE_URL}/auth/strava/connect`);
   if (!res.url) throw new Error('Strava connect failed');
   window.location.href = res.url;
+}
+
+
+
+// Feed API
+export async function fetchFeeds(pageSize: number = 5, pageNumber: number = 1) {
+  return fetchWithAuth(`${API_BASE_URL}/feed/?page_number=${pageNumber}&page_size=${pageSize}`);
+}
+
+export async function likeFeed(feed_id: string) {
+  return fetchWithAuth(`${API_BASE_URL}/feed/${feed_id}/like`, { method: 'POST' });
+}
+
+export async function unlikeFeed(feed_id: string) {
+  return fetchWithAuth(`${API_BASE_URL}/feed/${feed_id}/unlike`, { method: 'DELETE' });
+}
+
+export async function deleteFeed(feed_id: string) {
+  return fetchWithAuth(`${API_BASE_URL}/feed/${feed_id}/delete`, { method: 'DELETE' });
+}
+
+// Create feed (POST /feed/create)
+export async function createFeed(feedData: { train_date: string; title: string; train_summary: string; note?: string }) {
+  return fetchWithAuth(`${API_BASE_URL}/feed/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(feedData),
+  });
 }

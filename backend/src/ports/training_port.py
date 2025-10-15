@@ -30,7 +30,7 @@ class TrainingPort(ABC):
         ...
         
     @abstractmethod
-    async def get_session_by_id(self, user_id:UUID, session_id:UUID, sport_type:str)->TrainResponse:
+    async def get_session_by_activity_id(self, user_id:UUID, activity_id:int, provider:str)->TrainResponse:
         """훈련 세션 받기"""
         ...
         
@@ -45,7 +45,7 @@ class TrainingPort(ABC):
         ...
         
     @abstractmethod
-    def delete_session(self, user_id:UUID, session_id:int)->bool:
+    async def delete_session(self, user_id:UUID, session_id:UUID)->bool:
         """세션 삭제"""
         ...
     
