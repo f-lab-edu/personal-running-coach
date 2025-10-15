@@ -15,7 +15,6 @@ const LoginPage: React.FC<
     e.preventDefault();
     try {
       const res = await loginWithEmail(email, pwd);
-      console.log(res)
       setUser(res.user);
       setThirdList(res.connected);
       localStorage.setItem('access_token', res.token.access_token);
