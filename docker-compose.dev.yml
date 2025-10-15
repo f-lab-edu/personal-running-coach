@@ -22,6 +22,8 @@ services:
   redis:
     image: redis:7
     container_name: redis
+    volumes:
+      - redis_data:/data
     expose:
       - "6379"
 
@@ -103,3 +105,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
