@@ -135,7 +135,3 @@ class TokenAdapter(TokenPort):
         except Exception as e:
             raise InternalError(context="error verify_refresh_token", original_exception=e)
     
-    def invalidate_refresh_token(self, jwt_str:str)->bool: 
-        ### 토큰 삭제
-        ...
-    

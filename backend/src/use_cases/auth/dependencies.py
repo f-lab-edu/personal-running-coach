@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 async def get_test_user() -> TokenPayload:
     """테스트 유저 """
     return TokenPayload(
-        user_id=UUID("7c311ca58af9472194f70fd4cf8f9b90"),
+        user_id=UUID("533734ec-56e6-4b99-a795-5a3d31824a4f"),
         exp=0,
         iat=0,
         token_type="access"

@@ -41,6 +41,10 @@ class BadRequestError(CustomError):
 class DBError(CustomError):
     pass
 
+class DuplicateError(CustomError):
+    status_code = 409
+    detail = "duplicate error"
+
 class InternalError(CustomError):
     pass
 

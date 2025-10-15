@@ -5,7 +5,6 @@ import os
 BASE = Path(__file__).resolve().parent.parent.parent
 LOG_DIR = BASE / "logs"   # docker-compose volume과 연결한 경로
 os.makedirs(LOG_DIR, exist_ok=True)
-print(LOG_DIR)
 def get_logger(name: str = "app", filename: str = "server.log") -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.WARNING)

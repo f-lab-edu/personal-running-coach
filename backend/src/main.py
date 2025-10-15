@@ -9,7 +9,7 @@ from infra.db.redis.redis_client import init_redis, close_redis
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     ## db 시작
-    await create_db_and_tables()
+    # await create_db_and_tables() ## alembic 으로만 schema 관리
     await init_redis()
     yield
     ## db 종료
