@@ -33,7 +33,7 @@ def get_handler(db:AsyncSession=Depends(get_session),
 
 # 스케줄 새로 로드
 @router.get("/fetch-new-schedules")
-async def fetch_schedule(
+async def fetch_new_schedule(
     date:Optional[int] = None,
     payload: TokenPayload = Depends(get_current_user),
     handler:TrainSessionHandler=Depends(get_handler)):
@@ -101,7 +101,7 @@ async def upload_new_schedule(
 
 
 @router.delete("/delete")
-async def upload_new_schedule(
+async def delete_schedule(
     session_id:UUID = None,
     payload: TokenPayload = Depends(get_current_user),
     handler:TrainSessionHandler=Depends(get_handler)):

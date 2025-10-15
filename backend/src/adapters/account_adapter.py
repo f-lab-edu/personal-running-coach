@@ -262,15 +262,12 @@ class AccountAdapter(AccountPort):
             raise InternalError(context="Error validate_token_with_db", original_exception=e)
 
     
-    
-
-    # # TODO: db 에 저장된 토큰 삭제
     async def remove_token(self, user_id:UUID, device_id:UUID)->bool: 
         try:
-            res = await repo.remove_refresh_token(user_id=user_id,
+            return await repo.remove_refresh_token(user_id=user_id,
                                                 device_id=device_id,
                                                 db=self.db)
-            return res
+            
         except CustomError:
             raise
         except Exception as e:

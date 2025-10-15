@@ -8,8 +8,8 @@ from config.settings import google, security
 from config.exceptions import (DBError, CustomError,InternalError, 
                                NotFoundError, ValidationError)
 from schemas.models import TokenResponse, LoginResponse
-from adapters.account_adapter import AccountAdapter
-from adapters.token_adapter import TokenAdapter
+from ports.account_port import AccountPort
+from ports.token_port import TokenPort
 from infra.db.storage import repo
 from infra.security import encrypt_token, decrypt_token
 from infra.db.storage.third_party_token_repo import get_all_user_tokens
@@ -25,8 +25,8 @@ class GoogleHandler:
     구글 핸들러.
 
     """
-    def __init__(self, account_adapter:AccountAdapter,
-                 token_adapter:TokenAdapter,
+    def __init__(self, account_adapter:AccountPort,
+                 token_adapter:TokenPort,
                  db:AsyncSession
                  ):
         self.db = db
