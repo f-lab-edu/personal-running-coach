@@ -6,7 +6,7 @@ from typing import List, Tuple
 from sqlalchemy.exc import IntegrityError
 
 
-from infra.db.orm.models import FeedLikes, Feed
+from infra.db.orm.models import FeedLikes, Feed, User
 from config.exceptions import DBError, DuplicateError
 
 
@@ -53,18 +53,20 @@ async def delete_feed(db: AsyncSession, feed_id: UUID) -> bool:
 		await db.rollback()
 		raise DBError(context=f"[delete_feed] failed feed_id={feed_id}", original_exception=e)
 
-async def get_feed(db: AsyncSession, user_id:UUID, feed_id: UUID) -> Tuple[Feed, int, bool]:
+async def get_feed(db: AsyncSession, user_id:UUID, feed_id: UUID) -> Tuple[Feed, int, bool, str]:
 	try:
 		FL = aliased(FeedLikes)
 		stmt = (
 			select(
 				Feed,
 				func.count(FL.id).label("likes_count"),
-				func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like")
+				func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like"),
+				User.name.label("user_name")
 			)
+			.join(User, User.id == Feed.user_id)  # Feed 작성자 join
 			.outerjoin(FL, FL.feed_id == Feed.id)
 			.where(Feed.id == feed_id)
-			.group_by(Feed.id)
+			.group_by(Feed.id, User.name)
 		)
 		res = await db.execute(stmt)
 		return res.one_or_none()  # (Feed, likes_count, my_like)
@@ -76,7 +78,7 @@ async def get_feeds_with_likes(db: AsyncSession,
 								user_id: UUID,
 								offset: int = 0,
 								limit: int = 20
-							) -> List[Tuple[Feed, int, bool]]:
+							) -> List[Tuple[Feed, int, bool, str]]:
     """
     Feed 리스트 + likes_count + my_like를 한 번의 쿼리로 가져오기
     반환: List of Tuple(Feed, likes_count, my_like)
@@ -87,10 +89,12 @@ async def get_feeds_with_likes(db: AsyncSession,
             select(
                 Feed,
                 func.count(FL.id).label("likes_count"),
-                func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like")
+                func.coalesce(func.bool_or(FL.user_id == user_id), False).label("my_like"),
+				User.name.label("user_name")
             )
+			.join(User, User.id == Feed.user_id)
             .outerjoin(FL, FL.feed_id == Feed.id)
-            .group_by(Feed.id)
+            .group_by(Feed.id, User.name)
             .order_by(Feed.created_at.desc())
             .offset(offset)
             .limit(limit)

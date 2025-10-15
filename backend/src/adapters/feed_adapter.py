@@ -65,11 +65,12 @@ class FeedAdapter(FeedPort):
             if not res:
                 raise NotFoundError(detail=f"requested feed does not exist")
             
-            feed, likes_count, my_like = res
+            feed, likes_count, my_like, user_name = res
             
             return FeedResponse(
                 feed_id=feed.id,
                 user_id=feed.user_id,
+                user_name=user_name,
                 created_at=feed.created_at,
                 train_date=feed.train_date,
                 title=feed.title,
@@ -100,6 +101,7 @@ class FeedAdapter(FeedPort):
                 FeedResponse(
                     feed_id=feed.id,
                     user_id=feed.user_id,
+                    user_name=user_name,
                     created_at=feed.created_at,
                     train_date=feed.train_date,
                     title=feed.title,
@@ -108,7 +110,7 @@ class FeedAdapter(FeedPort):
                     likes_count=likes,
                     my_like=my_like,
                 )
-                for (feed, likes, my_like) in feeds
+                for (feed, likes, my_like, user_name) in feeds
             ]
                     
             return res
@@ -129,7 +131,7 @@ class FeedAdapter(FeedPort):
         except CustomError:
             raise
         except Exception as e:
-            raise InternalError(context="error get_feeds_with_likes", original_exception=e)
+            raise InternalError(context="error create_feed_like", original_exception=e)
 
     async def delete_feed_like(self, user_id: UUID, feed_id: UUID) -> bool:
         '''피드 좋아요 해제'''
@@ -141,5 +143,5 @@ class FeedAdapter(FeedPort):
         except CustomError:
             raise
         except Exception as e:
-            raise InternalError(context="error get_feeds_with_likes", original_exception=e)
+            raise InternalError(context="error delete_feed_like", original_exception=e)
         

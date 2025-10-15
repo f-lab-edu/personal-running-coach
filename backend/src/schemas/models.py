@@ -162,6 +162,7 @@ class LLMResponse(BaseModel):
 class FeedResponse(BaseModel):
     feed_id:UUID
     user_id:UUID
+    user_name:str
     created_at:datetime
     train_date:datetime
     title:str
