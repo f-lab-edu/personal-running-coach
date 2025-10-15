@@ -48,7 +48,6 @@ const TrainingDetailPage: React.FC = () => {
       .then(({status, data}) => {
         if (status !== 200) {
           setError(`API error ${status} ${data}`);
-          console.log(`API error ${status} ${data}`);
         }  
         setDetail(data)
       })
