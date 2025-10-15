@@ -11,6 +11,7 @@ const UserPage: React.FC = () => {
 	const [form, setForm] = useState<Partial<Profile & { pwd?: string }>>({});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [pwdEdit, setPwdEdit] = useState(false);
 
 	const infoKeys: (keyof UserInfoData)[] = ['height', 'weight', 'age', 'sex', 'train_goal'];
 
@@ -25,6 +26,7 @@ const UserPage: React.FC = () => {
 				setProfile(data);
 				setForm({
 					name: data.name,
+					pwd: '****', // default masked value
 					info: { ...data.info },
 				});
 			})
@@ -34,17 +36,16 @@ const UserPage: React.FC = () => {
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
+		if (name === 'pwd' && !pwdEdit) return; // prevent editing unless pwdEdit is true
 		if (infoKeys.includes(name as keyof UserInfoData)) {
-			// 'height' 같은 키는 이 블록으로
 			setForm(f => ({
 				...f,
 				info: {
-					...(f.info || {}), // form.info가 혹시라도 null이 되는 경우를 방지
+					...(f.info || {}),
 					[name]: value
 				}
 			}));
 		} else {
-			// 'name' 같은 키는 이 블록으로 들어옵니다.
 			setForm(f => ({ ...f, [name]: value }));
 		}
 	};
@@ -56,7 +57,7 @@ const UserPage: React.FC = () => {
 		try {
 			const {status, data} = await updateProfile({
 				name: form.name,
-				pwd: form.pwd,
+				pwd: pwdEdit ? form.pwd : undefined,
 				info: form.info,
 			});
 
@@ -65,7 +66,7 @@ const UserPage: React.FC = () => {
 			} 
 			setProfile(data);
 			setEdit(false);
-			
+			setPwdEdit(false);
 		} catch (e: any) {
 			setError(e.message);
 		} finally {
@@ -94,10 +95,15 @@ const UserPage: React.FC = () => {
 			) : (
 				<form onSubmit={handleSubmit} style={{marginTop:16}}>
 					<div>
-						<label>Name: <input name="name" value={form.name ?? ''} onChange={handleChange} /></label>
+						<label>Name: <input name="name" value={form.name ?? ''} onChange={handleChange} required/></label>
 					</div>
 					<div>
-						<label>Password: <input name="pwd" type="password" value={form.pwd ?? ''} onChange={handleChange} /></label>
+						<label>Password: <input name="pwd" type="password" value={form.pwd ?? ''} onChange={handleChange} disabled={!pwdEdit} required style={{ background: pwdEdit ? '#fff' : '#eee' }}/></label>
+						{!pwdEdit ? (
+							<button type="button" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(true); setForm(f => ({ ...f, pwd: '' })); }}>Change Password</button>
+						) : (
+							<button type="button" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }}>Cancel</button>
+						)}
 					</div>
 					<div>
 						<label>Height: <input name="height" type="number" value={form.info?.height ?? ''} onChange={handleChange} /></label>
@@ -119,7 +125,7 @@ const UserPage: React.FC = () => {
 						<label>Train Goal: <input name="train_goal" value={form.info?.train_goal ?? ''} onChange={handleChange} /></label>
 					</div>
 					<button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
-					<button type="button" onClick={() => setEdit(false)} style={{marginLeft:8}}>Cancel</button>
+					<button type="button" onClick={() => { setEdit(false); setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }} style={{marginLeft:8}}>Cancel</button>
 				</form>
 			)}
 		</div>

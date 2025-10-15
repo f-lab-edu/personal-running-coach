@@ -67,7 +67,7 @@ export type UserInfoData = {
 export type Profile = {
   id: string;
   email: string;
-  name?: string;
+  name: string;
   provider: string;
   info?: UserInfoData;
 };
