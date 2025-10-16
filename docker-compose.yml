@@ -3,6 +3,8 @@ services:
   db:
     image: postgres:15
     container_name: postgres
+    env_file:
+      - ./backend/src/.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
@@ -16,6 +18,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - service_net
 
   redis:
     image: redis:7
@@ -24,15 +28,14 @@ services:
       - redis_data:/data
     expose:
       - "6379"
-
+    networks:
+      - service_net
 
   app1:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
     container_name: server_app1
-    ports:
-      - "8000:8000"
     expose:
       - "8000"
     env_file:
@@ -54,15 +57,14 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
-
+    networks:
+      - service_net
 
   app2:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
     container_name: server_app2
-    ports:
-      - "8001:8000"
     expose:
       - "8000"
     env_file:
@@ -84,10 +86,8 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
-
-
-
-        
+    networks:
+      - service_net
 
   nginx:
     image: nginx:latest
@@ -110,6 +110,9 @@ services:
       - app1
       - app2
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'" #  주기적으로 설정 리로드
+    networks:
+      - monitoring_net
+      - service_net
 
   certbot:
     image: certbot/certbot
@@ -118,10 +121,48 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ./data/certbot/lib:/var/lib/letsencrypt
-      
-
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - service_net
+
+  # 모니터링. 프로메테우스
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    expose:
+      - "9090"
+    networks:
+      - monitoring_net
+      - service_net
+
+  # 그라파나
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    env_file:
+      - ./monitoring/.env
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    expose:
+      - "3000" 
+    networks:
+      - monitoring_net
+
+networks:
+  service_net:
+    driver: bridge  # 컨테이너끼리 독립된 가상 네트워크에서 통신
+  monitoring_net:
+    driver: bridge
+
 
 volumes:
   postgres_data:
   redis_data:
+  prometheus_data:
+  grafana_data:
