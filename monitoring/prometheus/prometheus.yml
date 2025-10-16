@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'fastapi'
+    metrics_path: '/metrics'
+    static_configs:
+      # - targets: ['nginx:80']  # Nginx가 FastAPI 앞단에서 로드 밸런싱
+      # - targets: ['app1:8000', 'app2:8000']  # 개별 백엔드
+      - targets: ['app1:8000']
+        labels:
+          instance: 'app1'
+      - targets: ['app2:8000']
+        labels:
+          instance: 'app2'
