@@ -8,7 +8,7 @@ interface FetchWithAuthOptions extends RequestInit {
 async function fetchWithAuth(
   url: string,
   options: FetchWithAuthOptions = {}
-): Promise<any> {
+): Promise<{ status: number; data: any }> {
   let token = localStorage.getItem("access_token");
 
   options.headers = {
@@ -17,7 +17,7 @@ async function fetchWithAuth(
   };
 
   let res = await fetch(url, { ...options, credentials: "include" });
-  let resData:any = null;
+  let resData: any = null;
 
   if (res.status !== 304) {
     try {
@@ -57,8 +57,6 @@ async function fetchWithAuth(
     };
 
     res = await fetch(url, { ...options, credentials: "include" });
-    let resData:any = null;
-
     if (res.status !== 304) {
       try {
         resData = await res.json();
@@ -71,7 +69,6 @@ async function fetchWithAuth(
 
   return { status: res.status, data: resData };
 }
-
 
 export async function fetchAnalysis() {
   return fetchWithAuth(`${API_BASE_URL}/ai/get`);
@@ -250,8 +247,8 @@ export async function logout(deviceId: string) {
 
 export async function connectStrava() {
   const res = await fetchWithAuth(`${API_BASE_URL}/auth/strava/connect`);
-  if (!res.url) throw new Error('Strava connect failed');
-  window.location.href = res.url;
+  if (!res.data.url) throw new Error('Strava connect failed');
+  window.location.href = res.data.url;
 }
 
 

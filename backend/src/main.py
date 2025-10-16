@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from prometheus_fastapi_instrumentator import Instrumentator
+
 from interfaces.api import routers
 from config import settings
 from infra.db.storage.session import create_db_and_tables, close_db
@@ -28,6 +30,9 @@ app.add_middleware(
     allow_methods=settings.cors.methods,
     allow_headers=settings.cors.headers,
 )
+
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app)  # /metrics endpoint 자동 생성
 
 @app.get("/health")
 async def health_check():
