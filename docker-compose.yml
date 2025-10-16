@@ -35,7 +35,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    container_name: 
+    container_name: server_app1
     ports:
       - "8000:8000"
     expose:
