@@ -87,10 +87,12 @@ docker compose -f 'docker-compose.dev.yml' up --build -d
 
 ![그라파나 대시보드](backend/doc/grafana_dashboard.png)
 
+---
 ## 🚀 TODO / 개선 예정
 - [ ] 프론트엔드 UI 개선 (대시보드/훈련 결과 시각화)
 - [ ] 훈련 스케줄 추천 프롬프트 고도화 (AI 코칭 정확도 향상)
 - [ ] 서드파티 추가 연동 (가민/코로스 등)
+- [ ] 프론트엔드 배포 분리: S3 + Cloudfront 활용
 ---
 
 ## 📄 라이선스
