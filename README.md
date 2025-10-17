@@ -17,6 +17,7 @@
 [Backend (FastAPI app1,app2)] → [DB(PostgreSQL)]
                             ↘ [Redis]
                             ↘ [LLM(OpenAI)]
+                            ↘ [Prometheus/Grafana]
 ```  
 - **Nginx** → 정적 파일 제공, 백엔드 리버스 프록시,  로드밸런싱
 - **Certbot** → SSL 인증서 자동 발급/갱신
@@ -39,7 +40,7 @@
 - 서드 파티 훈련 데이터 사용 (스트라바 OAuth)
 - 훈련 기록 업로드 및 저장
 - AI 기반 맞춤형 훈련 스케줄 및 코치 조언 생성 (LLM)
-- 피드 게시판 / 커뮤니티 기능
+- 기본 피드 기능 제공
 ---
 
 
@@ -52,7 +53,8 @@
 - **Database** : PostgreSQL
   - 버전 관리/마이그레이션 : Alembic
 - **Cache** : Redis (세션 + etag 관리)
-- **Infra & Deployment** : Docker, Nginx, Certbot(SSL), GitHub Actions(CI/CD)
+- **Infra & Deployment** : Docker, Nginx, Certbot(SSL), GitHub Actions(CI/CD),
+                        Prometheus, Grafana
 - **LLM** : OpenAI API
 
 ---
@@ -70,17 +72,27 @@ docker compose -f 'docker-compose.dev.yml' up --build -d
 ```
 
 
-#### 환경 변수 설정
-`backend/src/.env` 파일 생성: env.example 확인
-
+##### 환경 변수 설정
+- `backend/src/.env` : env.example 확인
+- `monitoring/.env` : env.example 확인
+- `frontend/.env` : env.example 확인
 
 ---
 
+## 📊 모니터링
+- **Prometheus**: 애플리케이션/서버 메트릭 수집
+- **Grafana**: 시각화 및 대시보드 제공
+- **연동**: FastAPI → Prometheus metrics endpoint(`/metrics`) → Grafana 대시보드
+- **Endpoint**: [https://coach4runners.me/monitoring](https://coach4runners.me/monitoring)
+
+![그라파나 대시보드](backend/doc/grafana_dashboard.png)
+
+---
 ## 🚀 TODO / 개선 예정
 - [ ] 프론트엔드 UI 개선 (대시보드/훈련 결과 시각화)
 - [ ] 훈련 스케줄 추천 프롬프트 고도화 (AI 코칭 정확도 향상)
-- [ ] Prometheus/Grafana 서비스 모니터링 구축
 - [ ] 서드파티 추가 연동 (가민/코로스 등)
+- [ ] 프론트엔드 배포 분리: S3 + Cloudfront 활용
 ---
 
 ## 📄 라이선스
