@@ -1,3 +1,33 @@
+# etc
 aws
 data/certbot
-.env
+etc
+
+# env
+*.env
+.env.development
+.env.production
+
+# backend
+.venv
+__pycache__
+test*
+logs
+db.sqlite3
+
+# frontend
+*.log
+node_modules
+dist
+dist-ssr
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
