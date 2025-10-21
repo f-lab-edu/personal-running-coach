@@ -9,13 +9,19 @@ interface TrainingAddPageProps {
 
 const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
   const navigate = useNavigate();
+  // helper to get local datetime-local string (YYYY-MM-DDTHH:mm)
+  const toLocalDatetimeInput = (d: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const [form, setForm] = useState({
     provider: 'local',
-    train_date: new Date().toISOString().slice(0, 16), // 'YYYY-MM-DDTHH:mm' for datetime-local
-    distance: '', // integer only
-    hour: '', // integer only
-    minute: '', // integer only
-    second: '', // integer only
+    train_date: toLocalDatetimeInput(new Date()), // local 'YYYY-MM-DDTHH:mm' for datetime-local
+  distance: '', // integer only
+  hour: '', // integer only
+  minute: '', // integer only
+  second: '', // integer only
     activity_title: '',
     detail: '',
   });
@@ -38,9 +44,9 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
     setError('');
     try {
       // Prepare data for backend (convert to correct types)
-      const h = form.hour ? parseInt(form.hour) : 0;
-      const m = form.minute ? parseInt(form.minute) : 0;
-      const s = form.second ? parseInt(form.second) : 0;
+      const h = form.hour && form.hour !== '' ? parseInt(form.hour) : 0;
+      const m = form.minute && form.minute !== '' ? parseInt(form.minute) : 0;
+      const s = form.second && form.second !== '' ? parseInt(form.second) : 0;
       const totalSeconds = h * 3600 + m * 60 + s;
       // const distanceNum = form.distance ? parseInt(form.distance) : undefined;
       const distanceNum = parseInt(form.distance);
@@ -58,7 +64,8 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
       const reqBody = {
         user_id: user?.id,
         provider: form.provider,
-        train_date: form.train_date,
+        // convert local datetime-local string to UTC ISO before sending
+        train_date: new Date(form.train_date).toISOString(),
         avg_speed: avgSpeed,
         distance: distanceNum * 1000,
         total_time: totalSeconds,
@@ -77,14 +84,14 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
     <div style={{ maxWidth: 500, margin: '0 auto' }}>
       <h2>Add Training Session</h2>
       <form onSubmit={handleSubmit}>
-        <div>
+        {/* <div>
           <label>User ID</label>
           <input name="user_id" value={user?.id || ''} disabled style={{ width: '100%' }} />
         </div>
         <div>
           <label>Provider</label>
           <input name="provider" value={form.provider} disabled style={{ width: '100%' }} />
-        </div>
+        </div> */}
         <div>
           <label>Train Date</label>
           <input
@@ -117,7 +124,6 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
               value={form.hour}
               onChange={handleChange}
               style={{ width: '100%' }}
-              required
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"
@@ -130,7 +136,6 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
               value={form.minute}
               onChange={handleChange}
               style={{ width: '100%' }}
-              required
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"
@@ -143,7 +148,6 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
               value={form.second}
               onChange={handleChange}
               style={{ width: '100%' }}
-              required
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"

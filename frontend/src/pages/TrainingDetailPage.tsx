@@ -128,7 +128,12 @@ const TrainingDetailPage: React.FC = () => {
       <div style={{ background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
         <h2>Training Summary</h2>
         <div><b>분석 결과:</b> {passedSession?.analysis_result || '-'}</div>
-        <div><b>일자:</b> {passedSession?.train_date}</div>
+        <div>
+          <b>일자:</b>{' '}
+          {passedSession?.train_date
+            ? new Date(passedSession.train_date).toLocaleString()
+            : '-'}
+        </div>
         <div><b>거리:</b> {passedSession?.distance ?? '-'} m</div>
         <div><b>평균 속도:</b> {passedSession?.avg_speed ?? '-'} m/s</div>
         <div><b>총 시간:</b> {passedSession?.total_time ?? '-'} 초</div>
@@ -140,7 +145,15 @@ const TrainingDetailPage: React.FC = () => {
             <h3 style={{ marginBottom: 18 }}>Create Feed</h3>
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontWeight: 500 }}>Train Date</label>
-              <div style={{ padding: '8px 0', color: '#333', background: '#f5f5f5', borderRadius: 4 }}>{String(detail?.train_date || passedSession?.train_date)}</div>
+              <div style={{ padding: '8px 0', color: '#333', background: '#f5f5f5', borderRadius: 4 }}>
+                {detail?.train_date
+                ? new Date(detail.train_date).toLocaleString()
+                : passedSession?.train_date
+                ? new Date(passedSession.train_date).toLocaleString()
+                : '-'}
+
+
+              </div>
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontWeight: 500 }}>Title</label>
