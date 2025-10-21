@@ -81,9 +81,11 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '0 auto' }}>
-      <h2>Add Training Session</h2>
-      <form onSubmit={handleSubmit}>
+    <main className="content-area">
+      <div className="container">
+        <div className="card" style={{maxWidth:700, margin:'0 auto'}}>
+          <h2>Add Training Session</h2>
+          <form onSubmit={handleSubmit}>
         {/* <div>
           <label>User ID</label>
           <input name="user_id" value={user?.id || ''} disabled style={{ width: '100%' }} />
@@ -95,21 +97,21 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
         <div>
           <label>Train Date</label>
           <input
+            className="input"
             type="datetime-local"
             name="train_date"
             value={form.train_date}
             onChange={handleChange}
-            style={{ width: '100%' }}
             required
           />
         </div>
         <div>
           <label>Distance (km)</label>
           <input
+            className="input"
             name="distance"
             value={form.distance}
             onChange={handleChange}
-            style={{ width: '100%' }}
             required
             inputMode="numeric"
             pattern="\d*"
@@ -120,10 +122,10 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
           <div style={{ flex: 1 }}>
             <label>Hour</label>
             <input
+              className="input"
               name="hour"
               value={form.hour}
               onChange={handleChange}
-              style={{ width: '100%' }}
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"
@@ -132,10 +134,10 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
           <div style={{ flex: 1 }}>
             <label>Minute</label>
             <input
+              className="input"
               name="minute"
               value={form.minute}
               onChange={handleChange}
-              style={{ width: '100%' }}
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"
@@ -144,10 +146,10 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
           <div style={{ flex: 1 }}>
             <label>Second</label>
             <input
+              className="input"
               name="second"
               value={form.second}
               onChange={handleChange}
-              style={{ width: '100%' }}
               inputMode="numeric"
               pattern="\d*"
               placeholder="0"
@@ -156,17 +158,21 @@ const TrainingAddPage: React.FC<TrainingAddPageProps> = ({ user }) => {
         </div>
         <div>
           <label>Activity Title</label>
-          <input name="activity_title" value={form.activity_title} onChange={handleChange} style={{ width: '100%' }} />
+          <input className="input" name="activity_title" value={form.activity_title} onChange={handleChange} />
         </div>
         <div>
           <label>Detail</label>
-          <textarea name="detail" value={form.detail} onChange={handleChange} style={{ width: '100%' }} />
+          <textarea className="input" name="detail" value={form.detail} onChange={handleChange} />
         </div>
         {error && <div style={{ color: 'red' }}>{error}</div>}
-        <button type="submit" style={{ marginTop: 16 }}>Add</button>
-        <button type="button" style={{ marginLeft: 8 }} onClick={() => navigate('/training')}>Cancel</button>
-      </form>
-    </div>
+        <div style={{display:'flex', gap:8, marginTop:12}}>
+          <button className="btn" type="submit">Add</button>
+          <button className="btn btn--ghost" type="button" onClick={() => navigate('/training')}>Cancel</button>
+        </div>
+          </form>
+        </div>
+      </div>
+    </main>
   );
 }
 

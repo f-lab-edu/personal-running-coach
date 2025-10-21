@@ -62,107 +62,68 @@ const FeedPage: React.FC<FeedPageProps> = ({user}) => {
   };
 
   return (
-    <div>
-      <h2>Feed</h2>
-  {/* Removed Add Feed button */}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
-            {feeds.map(feed => (
-                <div key={feed.feed_id} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                padding: 16,
-                background: '#fff',
-                boxShadow: '0 2px 8px #eee',
-                borderRadius: 8,
-                position: 'relative'
-                }}>
-                {/* 삭제 버튼 */}
-                {user.id && feed.user_id === user.id && (
-                    <button
-                    onClick={() => handleDelete(feed.feed_id)}
-                    title="Delete"
-                    style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                    >
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6.5 2h3a.5.5 0 0 1 .5.5V3h3a.5.5 0 0 1 0 1h-.5v9a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V4H2.5a.5.5 0 0 1 0-1h3v-.5A.5.5 0 0 1 6.5 2zm-2 2v9a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4h-7zm2.5 2a.5.5 0 0 1 1 0v5a.5.5 0 0 1-1 0V6zm2 0a.5.5 0 0 1 1 0v5a.5.5 0 0 1-1 0V6z" fill="#d33"/>
-                    </svg>
-                    </button>
-                )}
-
-                {/* 제목 / 유저 */}
-                {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontWeight: 600, fontSize: 16 }}>{feed.title}</span>
-                    <span style={{ color: '#1976d2', fontWeight: 500 }}>{feed.user_name}</span>
-                </div> */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8}}>
-                    <span style={{ fontWeight: 600, fontSize: 16 }}>{feed.title}</span>
-                    <span style={{ color: '#1976d2', fontWeight: 500, marginTop: 15 }}>{feed.user_name}</span>
-                </div>
-
-                {/* 요약 / 노트 */}
-                <div style={{ color: '#555', marginBottom: 8 }}>{feed.train_summary}</div>
-                <div style={{ color: '#888', fontSize: 14, marginBottom: 8 }}>{feed.note || '-'}</div>
-
-                {/* 좋아요 / 액션 버튼 */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 500 }}>{feed.likes_count} Likes</span>
-                    {feed.my_like ? (
-                    <button
-                        onClick={() => handleUnlike(feed.feed_id)}
+    <main className="content-area">
+      <div className="container">
+        <div className="card">
+          <h2>Feed</h2>
+          {/* Removed Add Feed button */}
+          {error && <div style={{ color: 'red' }}>{error}</div>}
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 20 }}>
+                {feeds.map(feed => (
+                  <div key={feed.feed_id} className="card" style={{ position: 'relative' }}>
+                    {user && user.id && feed.user_id === user.id && (
+                      <button
+                        onClick={() => handleDelete(feed.feed_id)}
+                        title="Delete"
                         style={{
-                        padding: '4px 8px',
-                        fontSize: 13,
-                        borderRadius: 5,
-                        background: '#ffeaea',
-                        color: '#d33',
-                        border: 'none',
-                        cursor: 'pointer'
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer'
                         }}
-                    >
-                        Unlike
-                    </button>
-                    ) : (
-                    <button
-                        onClick={() => handleLike(feed.feed_id)}
-                        style={{
-                        padding: '4px 8px',
-                        fontSize: 13,
-                        borderRadius: 5,
-                        background: '#eaf7ff',
-                        color: '#1976d2',
-                        border: 'none',
-                        cursor: 'pointer'
-                        }}
-                    >
-                        Like
-                    </button>
+                      >
+                        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6.5 2h3a.5.5 0 0 1 .5.5V3h3a.5.5 0 0 1 0 1h-.5v9a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V4H2.5a.5.5 0 0 1 0-1h3v-.5A.5.5 0 0 1 6.5 2zm-2 2v9a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4h-7zm2.5 2a.5.5 0 0 1 1 0v5a.5.5 0 0 1-1 0V6zm2 0a.5.5 0 0 1 1 0v5a.5.5 0 0 1-1 0V6z" fill="#d33"/>
+                        </svg>
+                      </button>
                     )}
-                </div>
-                </div>
-            ))}
 
-            {/* 페이지네이션 */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 20 }}>
-                <button onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8}}>
+                      <span style={{ fontWeight: 600, fontSize: 16 }}>{feed.title}</span>
+                      <span style={{ color: '#1976d2', fontWeight: 500, marginTop: 15 }}>{feed.user_name}</span>
+                    </div>
+
+                    <div style={{ color: '#555', marginBottom: 8 }}>{feed.train_summary}</div>
+                    <div style={{ color: '#888', fontSize: 14, marginBottom: 8 }}>{feed.note || '-'}</div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 500 }}>{feed.likes_count} Likes</span>
+                      {feed.my_like ? (
+                        <button className="btn btn--ghost" onClick={() => handleUnlike(feed.feed_id)}>Unlike</button>
+                      ) : (
+                        <button className="btn" onClick={() => handleLike(feed.feed_id)}>Like</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 20 }}>
+                <button className="btn" onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</button>
                 <span>Page {page}</span>
-                <button onClick={() => setPage(page + 1)} disabled={feeds.length < pageSize}>Next</button>
-            </div>
-            </div>
-      
-      
-      )}
-    </div>
+                <button className="btn" onClick={() => setPage(page + 1)} disabled={feeds.length < pageSize}>Next</button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </main>
   );
 };
 

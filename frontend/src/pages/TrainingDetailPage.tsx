@@ -111,19 +111,8 @@ const TrainingDetailPage: React.FC = () => {
   const summary = (
     <div style={{ position: 'relative', marginBottom: 24 }}>
       <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 8, zIndex: 2 }}>
-        <button
-          style={{ padding: '8px 16px', background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}
-          onClick={() => setShowModal(true)}
-        >
-          Share
-        </button>
-        <button
-          style={{ padding: '8px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? 'Deleting...' : 'Delete'}
-        </button>
+        <button className="btn" onClick={() => setShowModal(true)}>Share</button>
+        <button className="btn btn--red" onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete'}</button>
       </div>
       <div style={{ background: '#f8f8f8', padding: 16, borderRadius: 8 }}>
         <h2>Training Summary</h2>
@@ -168,22 +157,14 @@ const TrainingDetailPage: React.FC = () => {
               <textarea
                 ref={noteRef}
                 rows={3}
-                style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc', resize: 'vertical' }}
+                className="input"
                 placeholder="Add your comments..."
               />
             </div>
             {shareError && <div style={{ color: 'red', marginBottom: 10 }}>{shareError}</div>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{ padding: '8px 16px', borderRadius: 4, background: '#eee', color: '#333', border: 'none', cursor: 'pointer' }}
-                disabled={sharing}
-              >Cancel</button>
-              <button
-                onClick={handleShare}
-                style={{ padding: '8px 16px', borderRadius: 4, background: '#1976d2', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                disabled={sharing}
-              >{sharing ? 'Sharing...' : 'Share'}</button>
+              <button className="btn btn--ghost" onClick={() => setShowModal(false)} disabled={sharing}>Cancel</button>
+              <button className="btn" onClick={handleShare} disabled={sharing}>{sharing ? 'Sharing...' : 'Share'}</button>
             </div>
           </div>
         </div>
@@ -241,11 +222,15 @@ const TrainingDetailPage: React.FC = () => {
   ) : null;
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
-      {summary}
-      {lapSection}
-      {streamSection}
-    </div>
+    <main className="content-area">
+      <div className="container">
+        <div className="card" style={{maxWidth:900, margin:'0 auto'}}>
+          {summary}
+          {lapSection}
+          {streamSection}
+        </div>
+      </div>
+    </main>
   );
 };
 

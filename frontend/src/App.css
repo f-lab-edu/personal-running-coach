@@ -44,6 +44,7 @@ body{
 .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
 .btn:active{transform:translateY(1px)}
 .btn--ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted)}
+.btn--red{background:#dc2626;border:1px solid rgba(15,23,42,0.06);color:white;}
 
 /* Cards and utilities */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px; width: 100%;}

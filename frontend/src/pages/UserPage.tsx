@@ -78,57 +78,63 @@ const UserPage: React.FC = () => {
 	if (!profile) return <div>Loading...</div>;
 
 	return (
-		<div style={{ maxWidth: 500, margin: '2rem auto', padding: 24, border: '1px solid #ccc', borderRadius: 8 }}>
-			<h2>User Profile</h2>
-			<div><b>Email:</b> {profile.email}</div>
-			<div><b>Provider:</b> {profile.provider}</div>
-			{!edit ? (
-				<>
-					<div><b>Name:</b> {profile.name}</div>
-					<div><b>Height:</b> {profile.info?.height ?? '-'}</div>
-					<div><b>Weight:</b> {profile.info?.weight ?? '-'}</div>
-					<div><b>Age:</b> {profile.info?.age ?? '-'}</div>
-					<div><b>Sex:</b> {profile.info?.sex ?? '-'}</div>
-					<div><b>Train Goal:</b> {profile.info?.train_goal ?? '-'}</div>
-					<button onClick={() => setEdit(true)} style={{marginTop:16}}>Edit</button>
-				</>
-			) : (
-				<form onSubmit={handleSubmit} style={{marginTop:16}}>
-					<div>
-						<label>Name: <input name="name" value={form.name ?? ''} onChange={handleChange} required/></label>
-					</div>
-					<div>
-						<label>Password: <input name="pwd" type="password" value={form.pwd ?? ''} onChange={handleChange} disabled={!pwdEdit} required style={{ background: pwdEdit ? '#fff' : '#eee' }}/></label>
-						{!pwdEdit ? (
-							<button type="button" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(true); setForm(f => ({ ...f, pwd: '' })); }}>Change Password</button>
-						) : (
-							<button type="button" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }}>Cancel</button>
-						)}
-					</div>
-					<div>
-						<label>Height: <input name="height" type="number" value={form.info?.height ?? ''} onChange={handleChange} /></label>
-					</div>
-					<div>
-						<label>Weight: <input name="weight" type="number" value={form.info?.weight ?? ''} onChange={handleChange} /></label>
-					</div>
-					<div>
-						<label>Age: <input name="age" type="number" value={form.info?.age ?? ''} onChange={handleChange} /></label>
-					</div>
-					<div>
-						<label>Sex: <select name="sex" value={form.info?.sex ?? ''} onChange={handleChange}>
-							<option value="">-</option>
-							<option value="M">M</option>
-							<option value="F">F</option>
-						</select></label>
-					</div>
-					<div>
-						<label>Train Goal: <input name="train_goal" value={form.info?.train_goal ?? ''} onChange={handleChange} /></label>
-					</div>
-					<button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
-					<button type="button" onClick={() => { setEdit(false); setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }} style={{marginLeft:8}}>Cancel</button>
-				</form>
-			)}
-		</div>
+		<main className="content-area">
+			<div className="container">
+				<div className="card" style={{maxWidth:600, margin:'0 auto'}}>
+					<h2>User Profile</h2>
+					<div><b>Email:</b> {profile.email}</div>
+					<div><b>Provider:</b> {profile.provider}</div>
+					{!edit ? (
+						<>
+							<div><b>Name:</b> {profile.name}</div>
+							<div><b>Height:</b> {profile.info?.height ?? '-'}</div>
+							<div><b>Weight:</b> {profile.info?.weight ?? '-'}</div>
+							<div><b>Age:</b> {profile.info?.age ?? '-'}</div>
+							<div><b>Sex:</b> {profile.info?.sex ?? '-'}</div>
+							<div><b>Train Goal:</b> {profile.info?.train_goal ?? '-'}</div>
+							<button className="btn" onClick={() => setEdit(true)} style={{marginTop:16}}>Edit</button>
+						</>
+					) : (
+						<form onSubmit={handleSubmit} style={{marginTop:16, display:'flex', flexDirection:'column', gap:12}}>
+							<div>
+								<label>Name: <input className="input" name="name" value={form.name ?? ''} onChange={handleChange} required/></label>
+							</div>
+							<div>
+								<label>Password: <input className="input" name="pwd" type="password" value={form.pwd ?? ''} onChange={handleChange} disabled={!pwdEdit} required style={{ background: pwdEdit ? '#fff' : '#eee' }}/></label>
+								{!pwdEdit ? (
+									<button type="button" className="btn btn--ghost" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(true); setForm(f => ({ ...f, pwd: '' })); }}>Change Password</button>
+								) : (
+									<button type="button" className="btn btn--ghost" style={{ marginLeft: 8 }} onClick={() => { setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }}>Cancel</button>
+								)}
+							</div>
+							<div>
+								<label>Height: <input className="input" name="height" type="number" value={form.info?.height ?? ''} onChange={handleChange} /></label>
+							</div>
+							<div>
+								<label>Weight: <input className="input" name="weight" type="number" value={form.info?.weight ?? ''} onChange={handleChange} /></label>
+							</div>
+							<div>
+								<label>Age: <input className="input" name="age" type="number" value={form.info?.age ?? ''} onChange={handleChange} /></label>
+							</div>
+							<div>
+								<label>Sex: <select className="input" name="sex" value={form.info?.sex ?? ''} onChange={handleChange}>
+									<option value="">-</option>
+									<option value="M">M</option>
+									<option value="F">F</option>
+								</select></label>
+							</div>
+							<div>
+								<label>Train Goal: <input className="input" name="train_goal" value={form.info?.train_goal ?? ''} onChange={handleChange} /></label>
+							</div>
+							<div style={{display:'flex', gap:8}}>
+								<button type="submit" className="btn" disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
+								<button type="button" className="btn btn--ghost" onClick={() => { setEdit(false); setPwdEdit(false); setForm(f => ({ ...f, pwd: '****' })); }}>Cancel</button>
+							</div>
+						</form>
+					)}
+				</div>
+			</div>
+		</main>
 	);
 };
 

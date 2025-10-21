@@ -108,20 +108,22 @@ const TrainingPage: React.FC = () => {
 	const todayStr = new Date().toISOString().slice(0, 10);
 	const navigate = useNavigate();
 		return (
-			<div>
-				<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-					<h2>Training Calendar</h2>
-					<button onClick={() => navigate('/training/add')} style={{ padding: '8px 18px', fontSize: 16 }}>Add</button>
-				</div>
-				<div style={{ marginBottom: 16 }}>
-					<button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}>{'<'}</button>
-					<span style={{ margin: '0 12px' }}>{year}년 {month + 1}월</span>
-					<button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}>{'>'}</button>
-					<button style={{ marginLeft: 24 }} onClick={handleRefresh} disabled={loading}>Refresh</button>
-				</div>
-				{error && <div style={{ color: 'red' }}>{error}</div>}
-				<div style={{ overflowX: 'auto', width: '100%', height: '70vh', minHeight: 500 }}>
-					<table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 600, maxWidth: '100%', height: '100%', tableLayout: 'fixed' }}>
+			<main className="content-area">
+				<div className="container">
+					<div className="card">
+						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+							<h2>Training Calendar</h2>
+							<button className="btn" onClick={() => navigate('/training/add')}>추가</button>
+						</div>
+						<div style={{ marginBottom: 16 }}>
+							<button className="btn" onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}>{'<'}</button>
+							<span style={{ margin: '0 12px' }}>{year}년 {month + 1}월</span>
+							<button className="btn" onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}>{'>'}</button>
+							<button className="btn btn--ghost" style={{ marginLeft: 24 }} onClick={handleRefresh} disabled={loading}>새로고침</button>
+						</div>
+						{error && <div style={{ color: 'red' }}>{error}</div>}
+						<div style={{ overflowX: 'auto', width: '100%', height: '70vh', minHeight: 500 }}>
+							<table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 600, maxWidth: '100%', height: '100%', tableLayout: 'fixed' }}>
 						<thead>
 							<tr>
 								{['일', '월', '화', '수', '목', '금', '토'].map(d => (
@@ -186,8 +188,10 @@ const TrainingPage: React.FC = () => {
 					</table>
 				</div>
 				{loading && <div>Loading...</div>}
-			</div>
-		);
+				</div>
+				</div>
+			</main>
+			);
 };
 
 export default TrainingPage;
