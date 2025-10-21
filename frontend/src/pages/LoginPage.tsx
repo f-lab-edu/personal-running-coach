@@ -35,17 +35,23 @@ const LoginPage: React.FC<
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} required />
-        <button type="submit">Login</button>
-      </form>
-      <button onClick={handleGoogleLogin}>Login with Google</button>
-      <button onClick={() => navigate('/signup')}>Signup</button>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
-    </div>
+    <main className="content-area">
+      <div className="container">
+        <div className="card" style={{maxWidth: 420, margin: '0 auto'}}>
+          <h2>Login</h2>
+          <form onSubmit={handleLogin} style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+            <input className="input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input className="input" type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} required />
+            <button className="btn" type="submit">Login</button>
+          </form>
+          <div style={{display:'flex', gap:8, marginTop:12}}>
+            <button className="btn btn--ghost" onClick={handleGoogleLogin}>Login with Google</button>
+            <button className="btn btn--ghost" onClick={() => navigate('/signup')}>Signup</button>
+          </div>
+          {error && <div style={{ color: 'red', marginTop:12 }}>{error}</div>}
+        </div>
+      </div>
+    </main>
   );
 };
 export default LoginPage;

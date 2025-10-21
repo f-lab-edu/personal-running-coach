@@ -52,16 +52,18 @@ const AnalysisPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Analysis</h2>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-        <button onClick={handleGenerate} disabled={generating}>
-          {generating ? 'Generating...' : 'Generate'}
-        </button>
-        {error && (
-          <span style={{ color: 'red', marginLeft: 16 }}>{error}</span>
-        )}
-      </div>
+    <main className="content-area">
+      <div className="container">
+        <div className="card">
+          <h2>Analysis</h2>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+            <button className="btn" onClick={handleGenerate} disabled={generating}>
+              {generating ? 'Generating...' : 'Generate'}
+            </button>
+            {error && (
+              <span style={{ color: 'red', marginLeft: 16 }}>{error}</span>
+            )}
+          </div>
       {loading ? (
         <div>Loading...</div>
       ) : !data ? (
@@ -109,7 +111,9 @@ const AnalysisPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+        </div>
+      </div>
+    </main>
   );
 };
 

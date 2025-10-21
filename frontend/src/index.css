@@ -1,0 +1,9 @@
+/* Global reset and container */
+*{box-sizing:border-box}
+html,body,#root{height:100%;width:100%}
+body{margin:0;background:transparent;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#0f172a}
+a{color:inherit}
+ul{padding:0;margin:0}
+
+/* Ensure the root fills the viewport. App-level containers control centered width. */
+#root{display:block;width:100%}

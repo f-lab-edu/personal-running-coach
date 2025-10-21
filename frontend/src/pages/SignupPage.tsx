@@ -21,16 +21,20 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Signup</h2>
-      <form onSubmit={handleSignup}>
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} required />
-        <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required />
-        <button type="submit">Signup</button>
-      </form>
-      {result && <div>{result}</div>}
-    </div>
+    <main className="content-area">
+      <div className="container">
+        <div className="card" style={{maxWidth:420, margin:'0 auto'}}>
+          <h2>Signup</h2>
+          <form onSubmit={handleSignup} style={{display:'flex',flexDirection:'column',gap:12}}>
+            <input className="input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input className="input" type="password" placeholder="Password" value={pwd} onChange={e => setPwd(e.target.value)} required />
+            <input className="input" type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required />
+            <button className="btn" type="submit">Signup</button>
+          </form>
+          {result && <div style={{marginTop:12}}>{result}</div>}
+        </div>
+      </div>
+    </main>
   );
 };
 export default SignupPage;
