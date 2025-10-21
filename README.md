@@ -105,6 +105,7 @@ docker compose -f 'docker-compose.dev.yml' up --build -d
 - [ ] 훈련 스케줄 추천 프롬프트 고도화 (AI 코칭 정확도 향상)
 - [ ] 서드파티 추가 연동 (가민/코로스 등)
 - [ ] 프론트엔드 배포 분리: S3, Lambda, Cloudfront 활용
+- [ ] 사용자 등급에 따른 LLM 호출 빈도 설정
 ---
 
 ## 📄 라이선스
