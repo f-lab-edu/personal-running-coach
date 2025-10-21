@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate} from 'react-router-dom';
 import { loginWithToken, logout } from './api.ts';
+import './App.css'
 
 // Placeholder pages
 import MainPage from './pages/MainPage.tsx';
@@ -18,32 +19,36 @@ import TrainingAddPage from './pages/TrainingAddPage';
 
 // Top bar component
 const TopBar = ({ user, onLogout, onLogin }: { user: any, onLogout: () => void , onLogin: ()=> void}) => (
-	<div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px', background: '#eee' }}>
-		{user ? (
-			<>
-				<span style={{ marginRight: '10px' }}>{user.name}</span>
-				<button onClick={onLogout}>Logout</button>
-			</>
-		) : (
-			<>
-				<button onClick={onLogin}>Log In</button>
-			</>
-			// <span>Not logged in</span>
-		)}
-	</div>
+    <header className="topbar">
+        <div className="topbar-inner">
+            <div className="brand">Personal Running Coach</div>
+            <div className="topbar-actions">
+                {user ? (
+                    <>
+                        <span className="topbar-user">{user.name}</span>
+                        <button className="btn btn--ghost" onClick={onLogout}>Logout</button>
+                    </>
+                ) : (
+                    <>
+                        <button className="btn" onClick={onLogin}>Log In</button>
+                    </>
+                )}
+            </div>
+        </div>
+    </header>
 );
 
 // Left nav bar component
 const LeftNav = () => (
-    <nav style={{ width: '180px', background: '#f5f5f5', height: '100vh', padding: '20px 0', boxSizing: 'border-box' }}>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-            <li><Link to="/">Main</Link></li>
-            <li><Link to="/user">User Profile</Link></li>
-            <li><Link to="/signup">Signup</Link></li>
-            <li><Link to="/connect">Connect</Link></li>
-            <li><Link to="/training">Training</Link></li>
-            <li><Link to="/feed">Feed</Link></li>
-            <li><Link to="/analysis">Analysis</Link></li>
+    <nav className="leftnav" aria-label="Main navigation">
+        <ul className="leftnav-list">
+            <li><Link className="nav-link" to="/">Main</Link></li>
+            <li><Link className="nav-link" to="/user">User Profile</Link></li>
+            <li><Link className="nav-link" to="/signup">Signup</Link></li>
+            <li><Link className="nav-link" to="/connect">Connect</Link></li>
+            <li><Link className="nav-link" to="/training">Training</Link></li>
+            <li><Link className="nav-link" to="/feed">Feed</Link></li>
+            <li><Link className="nav-link" to="/analysis">Analysis</Link></li>
         </ul>
     </nav>
 );
@@ -91,11 +96,11 @@ const App: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <div className="app-root">
             <TopBar user={user} onLogout={handleLogout} onLogin={handleLogin}/>
-            <div style={{ display: 'flex', flex: 1 }}>
+            <div className="app-body">
                 <LeftNav />
-                <div style={{ flex: 1, padding: '30px' }}>
+                <main className="content-area">
                     <Routes>
                         <Route path="/" element={<MainPage user={user} thirdList={thirdList}/>} />
                         <Route path="/user" element={<UserPage />} />
@@ -112,7 +117,7 @@ const App: React.FC = () => {
                         <Route path="/feed" element={<FeedPage user={user} />} />
                         <Route path="/analysis" element={<AnalysisPage />} />
                     </Routes>
-                </div>
+                </main>
             </div>
         </div>
     );
