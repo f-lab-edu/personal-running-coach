@@ -102,7 +102,7 @@ const App: React.FC = () => {
                 <LeftNav />
                 <main className="content-area">
                     <Routes>
-                        <Route path="/" element={<MainPage user={user} thirdList={thirdList}/>} />
+                        <Route path="/" element={<MainPage />} />
                         <Route path="/user" element={<UserPage />} />
                         <Route path="/auth/google/callback" element={<CallbackPage setUser={setUser} 
                                                                                     setThirdList={setThirdList}/>} />
