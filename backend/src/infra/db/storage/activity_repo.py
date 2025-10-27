@@ -34,7 +34,7 @@ async def add_train_session(db: AsyncSession,
         session = TrainSession(**session_data)
 
         db.add(session)
-        await db.commit()  ## increment + add 한번에 커밋
+        await db.commit()
         await db.refresh(session)
         return session
     except IntegrityError as e:
